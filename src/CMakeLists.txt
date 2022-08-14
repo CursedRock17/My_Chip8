@@ -1,0 +1,1 @@
+add_library(chip8 chip8.cpp)
