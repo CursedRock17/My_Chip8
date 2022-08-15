@@ -1,5 +1,4 @@
 #include "chip8.h"
-#include <iostream>
 
 Chip::Chip(){}
 Chip::~Chip(){}
@@ -9,14 +8,13 @@ void Chip::EmulateChip(){
     opcode = memory[PC] << 8 | memory[PC + 1];
 
     //Decode Opcode - Convert from big endian to regular binary
-
     switch(opcode & 0xF000){
     // Some Opcodes //
 
     //We need to set I to the adress NNN by using ANNN
     //Execute opcodes - Go from current to what we need
     case 0x0000: 
-        switch(opcode & 0x000f){
+        switch(opcode & 0x000F){
             case 0x0000:
             //Clear the screen
             //I = opcode & 0x0FFF;
@@ -35,6 +33,7 @@ void Chip::EmulateChip(){
     //More opcodes
 
     case 0x2000:
+    //Call the subroute at NNN
         stack[sp] = PC;
         ++sp;
         PC = opcode & 0x0FFF;
@@ -118,6 +117,18 @@ void Chip::Init(){
     sp = 0;
 
     //Clear Display, stack, registers, memory
+    std::fill_n(V, 16, 0);
+
+    for(int sc = 0; sc < 16; sc++){
+        stack[sc] = 0;
+    }
+
+    std::fill_n(memory, 4096, 0);
+
+    std::fill_n(graphics, (64 * 32), 0);
+
+    std::fill_n(key, 16, 0);
+
     for(int i = 0; i < 80; ++i){
     //Load Fontset
         memory[i] = fontset[i];
@@ -125,13 +136,17 @@ void Chip::Init(){
     //Reset Timers
     sound_timer = 0;
     delay_timer = 0;
+
+    draw_flag = true;
     }
 
 
     //load program into memory
+    /*
     for(int j = 0; j < 4000; ++j){
         memory[j + 512] = buffer[j];
     }
+    */
 
 }
 

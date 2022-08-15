@@ -8,9 +8,12 @@ add_executable(${PROJECT_NAME} main.cpp)
 
 add_subdirectory(src)
 
+find_package(glfw3 REQUIRED)
+
 target_link_libraries(${PROJECT_NAME}
 PUBLIC
     chip8
+    glfw
 )
 
 target_include_directories(${PROJECT_NAME}

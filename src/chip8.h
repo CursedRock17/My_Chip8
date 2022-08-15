@@ -2,6 +2,8 @@
 #define CHIP8_H
 
 #include <array>
+#include <iostream>
+#include <algorithm>
 
 class Chip {
 public:
