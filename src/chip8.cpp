@@ -141,6 +141,11 @@ void Chip::Init(){
     }
 
 
+}
+
+void Chip::LoadGame(const char* game_name){
+    FILE* game_file = fopen(game_name, "file");
+
     //load program into memory
     /*
     for(int j = 0; j < 4000; ++j){
@@ -148,10 +153,7 @@ void Chip::Init(){
     }
     */
 
-}
-
-void Chip::LoadGame(const char* game_name){
-
+   //make sure it's not too big
 }
 
 void Chip::SetKeys(){

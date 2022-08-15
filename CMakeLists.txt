@@ -7,17 +7,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 add_executable(${PROJECT_NAME} main.cpp)
 
 add_subdirectory(src)
-
-find_package(glfw3 REQUIRED)
+add_subdirectory(src/Graphics)
 
 target_link_libraries(${PROJECT_NAME}
 PUBLIC
     chip8
-    glfw
+    Graphics
 )
 
 target_include_directories(${PROJECT_NAME}
 PUBLIC
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}/src"
+    "${PROJECT_SOURCE_DIR}/src/Graphics"
 )

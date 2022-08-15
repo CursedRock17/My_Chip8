@@ -1,15 +1,15 @@
 #include "src/chip8.h"
 //Spot for openGl
-#include <GLFW/glfw3.h>
+#include "./src/Graphics/GraphicsInit.cpp"
 
 int main(int argc, char** argv){
     Chip chip;
 
     //Graphics Setup:
-    
+    GraphicsInit();
 
     chip.Init();
-    chip.LoadGame("Name");
+    chip.LoadGame("Replace Name");
 
     for(;;){
         chip.EmulateChip();
