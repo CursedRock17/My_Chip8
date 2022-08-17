@@ -2,23 +2,30 @@
 //Spot for openGl
 #include "./src/Graphics/GraphicsClass.h"
 
+#include <iostream>
+
 int main(int argc, char** argv){
+    //Chip setup
     Chip chip;
 
-    //Graphics Setup:
+    //Graphics setup:
     Graphics gfx;
-    gfx.GraphicsRun();
 
     chip.Init();
     chip.LoadGame("Replace Name");
 
-    for(;;){
+    bool should_stop = false;
+
+    while(!should_stop){
         chip.EmulateChip();
 
         if(chip.draw_flag){
-        //Draw graphics
+            int ender = gfx.GraphicsRun(chip);
+            if(ender != 0)
+                should_stop = true;
         }
 
+        
         chip.SetKeys();
     }
 

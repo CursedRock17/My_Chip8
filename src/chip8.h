@@ -17,6 +17,7 @@ void LoadGame(const char* game_name);
 void SetKeys();
 bool draw_flag;
 
+unsigned char graphics[64 * 32]; //Replace with SDL or openGL
 private:
 
 //This Memory starts arter 0x200 (512) thats where the interpreter is
@@ -41,7 +42,6 @@ unsigned short I;
 //unsigned char NN;
 //unsigned char N, X, Y;
 
-unsigned char graphics[64 * 32]; //Replace with SDL or openGL
 
 //Keypad is made of 16 registers for the Vx and maps 0-9 and A-F, its a 4x4 matrix
 unsigned char fontset[80] =
