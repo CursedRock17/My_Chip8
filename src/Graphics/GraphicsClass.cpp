@@ -1,9 +1,9 @@
-#include <GLFW/glfw3.h>
+#include "GraphicsClass.h"
 
-int GraphicsInit(){
-    
-    GLFWwindow* window;
+Graphics::Graphics(){}
+Graphics::~Graphics(){}
 
+int Graphics::GraphicsRun(){
     // Init the libraries
     if(!glfwInit())
         return -1;
@@ -28,10 +28,17 @@ int GraphicsInit(){
 
         glfwSwapBuffers(window);
 
+        GraphicsUpdate();
+
         glfwPollEvents();
     }
 
     glfwTerminate();
 
     return 0;
+}
+
+void Graphics::GraphicsUpdate()
+{
+
 }

@@ -1,12 +1,13 @@
 #include "src/chip8.h"
 //Spot for openGl
-#include "./src/Graphics/GraphicsInit.cpp"
+#include "./src/Graphics/GraphicsClass.h"
 
 int main(int argc, char** argv){
     Chip chip;
 
     //Graphics Setup:
-    GraphicsInit();
+    Graphics gfx;
+    gfx.GraphicsRun();
 
     chip.Init();
     chip.LoadGame("Replace Name");
