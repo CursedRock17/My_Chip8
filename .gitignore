@@ -49,3 +49,6 @@ _deps
 
 [Bb]uild
 .vscode
+
+#specific to this project
+glad.c
