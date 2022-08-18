@@ -23,7 +23,7 @@ public:
 
 private:
     GLFWwindow* window;
-    uint8_t screenData[32][64][3];
+    GLuint screenData[32][64][3];
 
     void GraphicsUpdate(const Chip& c8);
 
