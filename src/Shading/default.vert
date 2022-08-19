@@ -24,4 +24,5 @@ void main()
 	// Assigns the colors from the Vertex Data to "color"
 	color = aColor;
 	// Assigns the texture coordinates from the Vertex Data to "texCoord"
-	
+	texCoord = aTex;
+}

@@ -70,9 +70,10 @@ void Shader::compileErrors(unsigned int shader, const char* type)
 {
 	// Stores status of compilation
 	GLint hasCompiled;
+	const char* gram = "PROGRAM";
 	// Character array to store error message in
 	char infoLog[1024];
-	if (type != "PROGRAM")
+	if (type != gram)
 	{
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &hasCompiled);
 		if (hasCompiled == GL_FALSE)

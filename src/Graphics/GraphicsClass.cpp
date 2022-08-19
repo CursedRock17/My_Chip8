@@ -16,10 +16,10 @@ int Graphics::GraphicsRun(Chip chip){
     // Vertices coordinates
     GLfloat vertices[] =
     { //     COORDINATES     /        COLORS      /   TexCoord  //
-	    -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,	0.0f, 0.0f, // Lower left corner
-	    -0.5f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f,	0.0f, 1.0f, // Upper left corner
-	     0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,	1.0f, 1.0f, // Upper right corner
-	     0.5f, -0.5f, 0.0f,     1.0f, 1.0f, 1.0f,	1.0f, 0.0f  // Lower right corner
+	-0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,	0.0f, 0.0f, // Lower left corner
+	-0.5f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f,	0.0f, 1.0f, // Upper left corner
+	 0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,	1.0f, 1.0f, // Upper right corner
+	 0.5f, -0.5f, 0.0f,     1.0f, 1.0f, 1.0f,	1.0f, 0.0f  // Lower right corner
     };
 
 	// Indices for vertices order
@@ -62,9 +62,10 @@ int Graphics::GraphicsRun(Chip chip){
     EBO EBO1(indices, sizeof(indices));
 
 	// Links VBO attributes such as coordinates and colors to VAO
-	VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
 	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	VAO1.LinkAttrib(VBO1, 2, 3, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
 	// Unbind all to prevent accidentally modifying them
 	VAO1.Unbind();
 	VBO1.Unbind();
@@ -72,14 +73,10 @@ int Graphics::GraphicsRun(Chip chip){
 
     GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
-    //Creating the Texure
-    GLuint img_width = 64;
-    GLuint img_height = 32;
-    GLuint numColCh = 3;
 
     //Clears the screen buy setting all the bits to black
-    for(int w = 0; w < 64; w++){
-        for(int h = 0; h < 32; h++){
+    for(GLuint w = 0; w < img_width; w++){
+        for(GLuint h = 0; h < img_height; h++){
             screenData[h][w][0] = screenData[h][w][1] = screenData[h][w][2] = 0;
         }
     }
@@ -90,9 +87,9 @@ int Graphics::GraphicsRun(Chip chip){
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
+
     //Generate the textrure
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_INT, screenData);
-    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screenData);
     //Going to need to change the image when its moved around and closer
     //We can use soemthing like GL_NEATest with glTexParameteri
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -111,17 +108,17 @@ int Graphics::GraphicsRun(Chip chip){
 	while (!glfwWindowShouldClose(window))
 	{
 		// Specify the color of the background
-		glClearColor(0.0f, 0.2f, 0.5f, 0.0f); 
+		glClearColor(0.07f, 0.13f, 0.17f, 1.0f); 
 		// Clean the back buffer and assign the new color to it
 		glClear(GL_COLOR_BUFFER_BIT);
 
         //Can check to see if we need to color each pixel
-        //GraphicsUpdate(chip);
+        GraphicsUpdate(chip);
         
 		// Tell OpenGL which Shader Program we want to use
 		shaderProgram.Activate();
         //You can only create a scale after creating the shader program
-        glUniform1f(uniID, 1.0f);
+        glUniform1f(uniID, 0.5f);
         glBindTexture(GL_TEXTURE_2D, texture);
 		// Bind the VAO so OpenGL knows to use it
 		VAO1.Bind();
@@ -153,13 +150,14 @@ void Graphics::GraphicsUpdate(const Chip& c8)
 {
     // Update pixels
     
-    for (int y = 0; y < 32; ++y)
-        for (int x = 0; x < 64; ++x)
-            if(0 == c8.graphics[y*64 + x])
-                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0; // Black
-            else
-                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0xFF; // White
-
+    for (GLuint y = 0; y < img_height; ++y)
+        for (GLuint x = 0; x < img_width; ++x)
+            if(0 == c8.graphics[y*64 + x]){
+                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0; // Black: 0
+            }
+            else {
+                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0xFF; // White: 0xFF
+            }
     // Update texture
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 64, 32, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
 }

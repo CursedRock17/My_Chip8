@@ -1,4 +1,4 @@
-add_library(Graphics GraphicsClass.cpp EBO.cpp VAO.cpp VBO.cpp shaderClass.cpp)
+add_library(Graphics GraphicsClass.cpp)
 
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
