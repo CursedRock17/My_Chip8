@@ -35,7 +35,7 @@ int Graphics::GraphicsRun(Chip chip){
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    window = glfwCreateWindow(640, 480, "Chip8", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "Chip8", NULL, NULL);
 
     if(!window){
         std::cout << "FAiled to create Wuindow" << std::endl;
@@ -48,7 +48,7 @@ int Graphics::GraphicsRun(Chip chip){
 
     gladLoadGL();
 
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, 1024, 768);
 
     //Don't know why I have to copy the full path
     Shader shaderProgram("/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Graphics/default.vert", "/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Graphics/default.frag");
@@ -73,7 +73,9 @@ int Graphics::GraphicsRun(Chip chip){
     GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
     //Creating the Texure
-    GLuint img_width, img_height, numColCh;
+    GLuint img_width = 64;
+    GLuint img_height = 32;
+    GLuint numColCh = 3;
 
     //Clears the screen buy setting all the bits to black
     for(int w = 0; w < 64; w++){
@@ -88,6 +90,9 @@ int Graphics::GraphicsRun(Chip chip){
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
+    //Generate the textrure
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_INT, screenData);
+    
     //Going to need to change the image when its moved around and closer
     //We can use soemthing like GL_NEATest with glTexParameteri
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -95,10 +100,6 @@ int Graphics::GraphicsRun(Chip chip){
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    //Generate the textrure
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screenData);
-
     //Might as well free the data from memory
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -110,13 +111,17 @@ int Graphics::GraphicsRun(Chip chip){
 	while (!glfwWindowShouldClose(window))
 	{
 		// Specify the color of the background
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+		glClearColor(0.0f, 0.2f, 0.5f, 0.0f); 
 		// Clean the back buffer and assign the new color to it
 		glClear(GL_COLOR_BUFFER_BIT);
+
+        //Can check to see if we need to color each pixel
+        //GraphicsUpdate(chip);
+        
 		// Tell OpenGL which Shader Program we want to use
 		shaderProgram.Activate();
         //You can only create a scale after creating the shader program
-        glUniform1f(uniID, 0.5f);
+        glUniform1f(uniID, 1.0f);
         glBindTexture(GL_TEXTURE_2D, texture);
 		// Bind the VAO so OpenGL knows to use it
 		VAO1.Bind();
@@ -147,7 +152,7 @@ int Graphics::GraphicsRun(Chip chip){
 void Graphics::GraphicsUpdate(const Chip& c8)
 {
     // Update pixels
-    /*
+    
     for (int y = 0; y < 32; ++y)
         for (int x = 0; x < 64; ++x)
             if(0 == c8.graphics[y*64 + x])
@@ -157,14 +162,4 @@ void Graphics::GraphicsUpdate(const Chip& c8)
 
     // Update texture
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 64, 32, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
-
-
-    
-    glBegin(GL_QUADS);
-        glTexCoord2d(0.0, 0.0); glVertex2d(0.0, 0.0);
-        glTexCoord2d(1.0, 0.0); glVertex2d(64, 0.0);
-        glTexCoord2d(1.0, 1.0); glVertex2d(64, 32);
-        glTexCoord2d(0.0, 1.0); glVertex2d(0.0, 32);
-    glEnd();
-    */
 }
