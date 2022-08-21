@@ -12,7 +12,6 @@ int Graphics::GraphicsRun(Chip chip){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
     // Vertices coordinates
     GLfloat vertices[] =
     { //     COORDINATES     /        COLORS      /   TexCoord  //
@@ -38,7 +37,7 @@ int Graphics::GraphicsRun(Chip chip){
     window = glfwCreateWindow(1024, 768, "Chip8", NULL, NULL);
 
     if(!window){
-        std::cout << "FAiled to create Wuindow" << std::endl;
+        std::cout << "Failed to create Window" << std::endl;
         glfwTerminate();
         return -1;
     }
@@ -51,7 +50,7 @@ int Graphics::GraphicsRun(Chip chip){
     glViewport(0, 0, 1024, 768);
 
     //Don't know why I have to copy the full path
-    Shader shaderProgram("/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Graphics/default.vert", "/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Graphics/default.frag");
+    Shader shaderProgram("/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Shading/default.vert", "/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Shading/default.frag");
 
     //Create and bind the starting array
     VAO VAO1;

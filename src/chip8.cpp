@@ -6,6 +6,13 @@ Chip::~Chip(){}
 void Chip::EmulateChip(){
     //Fetch Opcode
     opcode = memory[PC] << 8 | memory[PC + 1];
+    //It's easier to just premake these memory addresses
+
+    uint16_t nnn = opcode & 0x0FFF; // lowest 12 bits
+    uint8_t n = opcode & 0x000F; // lowest 4 bits
+    uint8_t nn = opcode & 0x00FF; // lowest 8 bits
+    uint8_t x = opcode >> 8 & 0x000F; // lower 4 bits of the high byte
+    uint8_t y = opcode >> 4 & 0x000F; // upper 4 bits of the low byte
 
     //Decode Opcode - Convert from big endian to regular binary
     switch(opcode & 0xF000){
@@ -14,15 +21,19 @@ void Chip::EmulateChip(){
     //We need to set I to the adress NNN by using ANNN
     //Execute opcodes - Go from current to what we need
     case 0x0000: 
-        switch(opcode & 0x000F){
+        switch(n){ // Have to check the lower 4 bits after checking upper 4
             case 0x0000:
             //Clear the screen
-            //I = opcode & 0x0FFF;
-            //PC += 2;
+            //Replace all the values with 0, the hexcode for black
+            graphics.fill(0);
+            draw_flag = true;
+            PC += 2;
             break;
             
             case 0x000E: //Return from subroutine
-
+            sp--;
+            PC = stack[sp];
+            PC += 2;
             break;
 
             default: 
@@ -30,26 +41,163 @@ void Chip::EmulateChip(){
         }
     break;
 
-    //More opcodes
+    //More opcodes - Probably going to move in list order
+    //They're already in big endian just remove the non-hex letters
+
+    case 0x1000: //1NNN - Jump to address NNN which is always opcode 0x0FFF
+        PC = nnn;
+        break;
 
     case 0x2000:
     //Call the subroute at NNN
-        stack[sp] = PC;
         ++sp;
-        PC = opcode & 0x0FFF;
+        stack[sp] = PC;
+        PC = nnn;
+        break;
+
+    case 0x3000: //Skip the next instruction if Vx = NN, normally a jump to the next code block
+        if(V[x] == V[nn]){
+            //V[0xF] = 1; //Carry
+            PC += 4;
+        }
+        else 
+            PC += 2;
         break;
     
     case 0x0004:
-        if(V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))
-            V[0xF] = 1; //Carry
+        if(V[x] != V[nn]){
+            PC += 2;
+        }
 
-        else 
-            V[0xF] = 0;
-
-        V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
         PC += 2;
         break;
 
+    case 0x0005: //if Vx == Vy skip the next instruction, jumping a code block
+        if(V[x] == V[y])
+            PC += 4;
+        else 
+            PC += 2;
+
+        break;
+
+
+    case 0x0006: //Just set Vx to nn
+        V[x] = nn;
+        PC++;
+
+        break;
+
+    case 0x0007: // Set Vx to nn + Vx or add nn
+        V[x] += nn;
+
+        PC += 2;
+        break;
+
+    case 0x0008:
+        switch(n){
+            case 0x0000: //Have to get to 0000 in binary (If & is exclusive), Set Vx to Vy, change those registries
+            /*
+            Explanation we have code 8XY0, the first one start with 8,
+            we take all these 0x8XXX codes and AND with n aka 0x000F to get the lower 4 bits
+            so 0x0008 = 1000000000000000 while 0x000F = 1111, the last 4 of 0x0008 are all 0
+            since they;re not compatible the number becomes 0000 or this new case
+            */
+            V[x] = V[y];
+
+            PC += 2;
+            break;
+
+            case 0x0001:  //Set Vx to Vx OR Vy
+            V[x] |=  V[y];
+
+            PC += 2;
+            break;
+
+            case 0x0002: //Set Vx to Vx AND Vy
+            V[x] &= V[y];
+
+            PC += 2;
+            break;
+
+            case 0x0003: //Set Vx to Vx XOR Vy
+            V[x] ^= V[y];
+
+            PC += 2;
+            break;
+            case 0x0004: // Set Vx to Vx + Vy, then must set Vf to carry;
+            V[x] += V[y];
+
+            if((V[x]) > 0x00FF) //Because we do the math beforehand we can check V[x]
+                //We need to set VF (F is a hexadecimal) to 1, also known as a carry
+                V[0xF] = 1;
+            else 
+                //Otherwise just set VF to 0
+                V[0xF] = 0;
+
+            PC += 2;
+            break;\
+
+            case 0x0005: //Set Vx to Vx - Vy, if Vx > Vy we need to borrow
+            if(V[x] > V[y])
+                V[0xF] = 1;
+            else 
+                V[0xF] = 0;
+            V[x] -= V[y];
+
+            PC += 2;
+            break;
+
+            case 0x0006: //Store the least signifcant bit of Vx in Vf then shifts Vx to the right 1
+            if((V[x] & 1) == 1)
+                V[0xF] = 1;
+            else 
+                V[0xF] = 0;
+            
+            V[x] >>= 1;
+            PC += 2;
+            break;
+
+            case 0x0007: // Set Vx to Vy - Vx, if Vy > Vx then there's a borrow, we can just check in reverse order
+            if (V[y] > V[x])
+                V[0xF] = 1;
+            else 
+                V[0xF] = 0;
+
+            V[x] = V[y] - V[x];
+
+            PC += 2;
+            break;
+
+            case 0x0008: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
+            if((V[x] & 7) == 1)
+                V[0xF] = 1;
+            else 
+                V[0xF] = 0;
+            
+            V[x] <<= 1; //This also counts as multiplication by 2 for example:
+            /*
+            0011 = 3 if you move it the left 1, you get 0110
+            or 0420 in its place which is 6. 3 * 2 = 6
+            */
+
+            PC += 2;
+            break;
+        }
+
+        break;
+
+    case 0x0009: // If Vx != Vy skip the next instruction
+    if(V[x] != V[y])
+        PC += 4;
+    else 
+        PC += 2;
+    break;
+
+    case 0x0010: //This is ANNN, the start of the letters, it sets I to nnn
+    I = nnn;    
+
+    PC += 2;
+    break;
 
     case 0x0033: //0xFX33
         memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
@@ -125,7 +273,7 @@ void Chip::Init(){
 
     std::fill_n(memory, 4096, 0);
 
-    std::fill_n(graphics, (64 * 32), 0);
+    graphics.fill(0);
 
     std::fill_n(key, 16, 0);
 
@@ -134,10 +282,10 @@ void Chip::Init(){
         memory[i] = fontset[i];
 
     //Reset Timers
-    sound_timer = 0;
-    delay_timer = 0;
+        sound_timer = 0;
+        delay_timer = 0;
 
-    draw_flag = true;
+        draw_flag = true;
     }
 
 

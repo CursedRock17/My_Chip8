@@ -17,7 +17,8 @@ void LoadGame(const char* game_name);
 void SetKeys();
 bool draw_flag;
 
-unsigned char graphics[64 * 32]; //Replace with SDL or openGL
+std::array<unsigned char,(64 * 32)> graphics; //Replace with SDL or openGL
+
 private:
 
 //This Memory starts arter 0x200 (512) thats where the interpreter is
@@ -25,22 +26,19 @@ unsigned char memory[4096];
 
 unsigned char opcode;
 
-unsigned char sound_timer;
-unsigned char delay_timer;
+unsigned char sound_timer = {0};
+unsigned char delay_timer = {0};
 
 std::array<unsigned short, 16> stack;
-unsigned short sp; //Stack Pointer
+unsigned short sp = {0}; //Stack Pointer
 
 //Keyboard
 unsigned char key[16];
 
 //Registers sections need a few types in the opcode table: NNN, NN, N, X, Y, PC, I, VN
 unsigned char V[16];
-unsigned short PC;
+unsigned short PC = {0};
 unsigned short I;
-
-//unsigned char NN;
-//unsigned char N, X, Y;
 
 
 //Keypad is made of 16 registers for the Vx and maps 0-9 and A-F, its a 4x4 matrix

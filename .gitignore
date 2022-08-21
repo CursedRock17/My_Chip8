@@ -49,6 +49,7 @@ _deps
 
 [Bb]uild
 .vscode
+.cache
 
 #specific to this project
 glad.c
