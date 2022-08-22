@@ -193,7 +193,7 @@ void Chip::EmulateChip(){
         PC += 2;
     break;
 
-    case 0x0010: //This is ANNN, the start of the letters, it sets I to nnn
+    case 0x0010: //This is ANNN, the start of the letters, it sets I to nnn 
     I = nnn;    
 
     PC += 2;
