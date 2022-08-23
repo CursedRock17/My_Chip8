@@ -46,6 +46,7 @@ int Graphics::GraphicsRun(Chip chip){
     glfwMakeContextCurrent(window);
 
     gladLoadGL();
+    glfwSetKeyCallback(window, NULL);
 
     glViewport(0, 0, 1024, 768);
 
@@ -159,4 +160,10 @@ void Graphics::GraphicsUpdate(const Chip& c8)
             }
     // Update texture
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
+}
+
+int Graphics::KeyPressed(){
+
+
+    return 0;
 }

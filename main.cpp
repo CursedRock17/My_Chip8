@@ -17,6 +17,8 @@ int main(int argc, char** argv){
 
     bool should_stop = false;
 
+    chip.LoadGame(argv[1]);
+
     while(!should_stop){
         chip.EmulateChip();
 

@@ -4,6 +4,7 @@ Chip::Chip(){}
 Chip::~Chip(){}
 
 void Chip::EmulateChip(){
+    
     //Fetch Opcode
     opcode = memory[PC] << 8 | memory[PC + 1];
     //It's easier to just premake these memory addresses
@@ -90,7 +91,7 @@ void Chip::EmulateChip(){
     case 0x0007: // Set Vx to nn + Vx or add nn
         V[x] += nn;
 
-        PC += 2;
+        PC += 4;
         break;
 
     case 0x0008:
@@ -124,6 +125,7 @@ void Chip::EmulateChip(){
 
             PC += 2;
             break;
+
             case 0x0004: // Set Vx to Vx + Vy, then must set Vf to carry;
             V[x] += V[y];
 
@@ -133,9 +135,9 @@ void Chip::EmulateChip(){
             else 
                 //Otherwise just set VF to 0
                 V[0xF] = 0;
-
             PC += 2;
-            break;\
+
+            break;
 
             case 0x0005: //Set Vx to Vx - Vy, if Vx > Vy we need to borrow
             if(V[x] > V[y])
@@ -145,6 +147,7 @@ void Chip::EmulateChip(){
             V[x] -= V[y];
 
             PC += 2;
+
             break;
 
             case 0x0006: //Store the least signifcant bit of Vx in Vf then shifts Vx to the right 1
@@ -155,6 +158,7 @@ void Chip::EmulateChip(){
             
             V[x] >>= 1;
             PC += 2;
+
             break;
 
             case 0x0007: // Set Vx to Vy - Vx, if Vy > Vx then there's a borrow, we can just check in reverse order
@@ -164,8 +168,8 @@ void Chip::EmulateChip(){
                 V[0xF] = 0;
 
             V[x] = V[y] - V[x];
-
             PC += 2;
+
             break;
 
             case 0x0008: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
@@ -179,7 +183,6 @@ void Chip::EmulateChip(){
             0011 = 3 if you move it the left 1, you get 0110
             or 0420 in its place which is 6. 3 * 2 = 6
             */
-
             PC += 2;
             break;
         }
@@ -193,20 +196,28 @@ void Chip::EmulateChip(){
         PC += 2;
     break;
 
-    case 0x0010: //This is ANNN, the start of the letters, it sets I to nnn 
-    I = nnn;    
+    case 0xA000: //This is ANNN, the start of the letters, it sets I to nnn, it turns to hex instead of numbers
+    I = nnn;   
+    PC += 2; 
 
-    PC += 2;
     break;
 
-    case 0x0033: //0xFX33
-        memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
-        memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
-        memory[I + 2] = (V[(opcode & 0x0F00) >> 8] / 100) % 10;
-        PC += 2;
-        break;
+    case 0xB000: // Jump to location nnn + V0 then set the program counter to that location
+    PC = nnn + V[0x0];
 
-    case 0xD000:
+    break;
+
+    case 0xC000: { //Set Vx to random byte AND nn, need a random number for the byte between 0 to 255
+    srand(time(0));
+    int rand_byte = rand()% 255;
+    //This switch case needs brackets becyase it has private variables in the scope
+    V[x] = nn & rand_byte;
+    PC += 2;
+
+    break;
+    }
+
+    case 0xD000: //Draw function
     {
         unsigned short x = V[(opcode & 0x0F00 >> 8) >> 8];
         unsigned short y = V[(opcode & 0x00F0) >> 4];
@@ -227,36 +238,117 @@ void Chip::EmulateChip(){
 
     draw_flag = true;
     PC += 2;
-
     }
+
     break;
 
-    case 0xE000:
+    case 0xE000:{
         switch(opcode & 0x00FF){
             //Ex9e skips the next instruction if
             //the key stored in VX is pressde
             case 0x009E:
-                if(key[V[(opcode & 0x0F00) >> 8]] != 0)
+                if(key[V[x]] != 0)
+                    PC += 4;
+                else 
+                    PC += 2;
+            break;
+
+            case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
+                if(key[V[x]] == 1)
                     PC += 4;
                 else 
                     PC += 2;
             break;
         }
+    break;
+    }
+    
 
+    case 0xF000:{
+        switch(opcode & 0x00FF){
+            case 0x0007: // Set Vx to the delay timer value
+            V[x] = delay_timer;
+            PC += 2;
+            break;
+
+            case 0x000A: //Store the value of a key press in Vx
+            {
+            bool has_pressed = false;
+                for(const auto& each_key : key){
+                    if(0 != each_key){
+                        V[x] = I;
+                        has_pressed = true;
+                    }
+            }
+
+            if(!has_pressed)
+                return;
+            PC += 2;
+            }
+            break;
+
+            case 0x0015: //Set Delay Timer to Vx
+            delay_timer = V[x];
+
+            PC += 2;
+            break;
+
+            case 0x0018: // Set sound timer to Vx
+            sound_timer = V[x];
+
+            PC += 2;
+            break;
+
+            case 0x001E: // Add I and Vx into I
+            V[0xF] = (I + V[x] > 0xFFF) ? 1 : 0;
+            I += V[x];
+
+            PC += 2;
+            break;
+
+            case 0x0029: // I equals to the location of sprtite for digit Vx
+            I = V[x] * 0x5;
+
+            PC += 2;
+            break;
+
+            case 0x0033: //0xFX33
+                memory[I] = V[x] / 100;
+                memory[I + 1] = (V[x] / 10) % 10;
+                memory[I + 2] = (V[x] / 100) % 10;
+                PC += 2;
+            break;
+
+            case 0x0055: //Store registers V0 through Vx in memory starting at I
+            for(int register_index = 0; register_index < 16; register_index++){
+                memory[I + register_index] = V[register_index];
+            }
+
+            PC += 2;
+            break;
+
+            case 0x0065: // Read registers V0 through Vx from memory starting at I
+            for(int mem_index = 0; mem_index < 16; mem_index++){
+                V[mem_index] = memory[I + mem_index];
+            }
+
+            PC += 2;
+            break;
+        }
+        break;
     }
 
+        //Set Timers
+        if(delay_timer > 0)
+            --delay_timer;
 
-    //Set Timers
-    if(delay_timer > 0)
-        --delay_timer;
-
-    if(sound_timer > 0) {
-        if(sound_timer == 1)
-            std::cout << "Beep" << std::endl;
-        --sound_timer;
+        if(sound_timer > 0) {
+            if(sound_timer == 1)
+                std::cout << "Beep" << std::endl;
+            --sound_timer;
+        }
     }
 }
-
 void Chip::Init(){
     //Begin loading the game and prepping the registers
     opcode = 0;
@@ -288,11 +380,18 @@ void Chip::Init(){
         draw_flag = true;
     }
 
+}
 
+int Chip::KeyPressed(){
+    return 0;
 }
 
 void Chip::LoadGame(const char* game_name){
+    std::cout << game_name << std::endl;
+    Init(); //Need to reiniziale to clear everythign
+
     FILE* game_file = fopen(game_name, "file");
+
 
     //load program into memory
     /*
@@ -302,6 +401,7 @@ void Chip::LoadGame(const char* game_name){
     */
 
    //make sure it's not too big
+    fclose(game_file);
 }
 
 void Chip::SetKeys(){

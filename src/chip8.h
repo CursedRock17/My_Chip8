@@ -14,7 +14,10 @@ Chip();
 void EmulateChip();
 void Init();
 void LoadGame(const char* game_name);
+
 void SetKeys();
+int KeyPressed();
+
 bool draw_flag;
 
 std::array<unsigned char,(64 * 32)> graphics; //Replace with SDL or openGL

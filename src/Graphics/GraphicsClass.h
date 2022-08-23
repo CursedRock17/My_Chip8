@@ -20,6 +20,7 @@ public:
 
     int GraphicsRun(Chip chip);
     void TerminateGraphics();
+    int KeyPressed();
 
 private:
     GLFWwindow* window;
