@@ -19,8 +19,7 @@ public:
     ~Graphics();
 
     int GraphicsRun(Chip chip);
-    void TerminateGraphics();
-    int KeyPressed();
+    void TerminateGraphics();   
 
 private:
     GLFWwindow* window;
@@ -34,4 +33,7 @@ private:
 
 };
 
+//For the GLFW input
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void return_action(const char hex);
 #endif

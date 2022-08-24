@@ -16,7 +16,7 @@ void Init();
 void LoadGame(const char* game_name);
 
 void SetKeys();
-int KeyPressed();
+int KeyPressed(const char hex);
 
 bool draw_flag;
 

@@ -3,6 +3,8 @@
 Graphics::Graphics(){}
 Graphics::~Graphics(){}
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 int Graphics::GraphicsRun(Chip chip){
     // Init the libraries
     if(!glfwInit())
@@ -46,7 +48,8 @@ int Graphics::GraphicsRun(Chip chip){
     glfwMakeContextCurrent(window);
 
     gladLoadGL();
-    glfwSetKeyCallback(window, NULL);
+    glfwSetKeyCallback(window, key_callback);
+
 
     glViewport(0, 0, 1024, 768);
 
@@ -146,6 +149,102 @@ int Graphics::GraphicsRun(Chip chip){
 	return 1;
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (action == GLFW_PRESS)
+        switch (key)
+        {
+        case GLFW_KEY_0:
+        return_action('0');
+
+        break;
+
+        case GLFW_KEY_1:
+        return_action('1');
+
+        break;
+
+        case GLFW_KEY_2:
+        return_action('2');
+
+
+        break;
+
+        case GLFW_KEY_3:
+        return_action('3');
+
+
+        break;
+
+        case GLFW_KEY_4:
+        return_action('4');
+
+        break;
+
+        case GLFW_KEY_5:
+        return_action('5');
+
+        break;
+
+        case GLFW_KEY_6:
+        return_action('6');
+
+
+        break;
+
+        case GLFW_KEY_7:
+        return_action('7');
+
+
+        break;
+
+        case GLFW_KEY_8:
+        return_action('8');
+
+
+        break;
+
+        case GLFW_KEY_9:
+        return_action('9');
+
+
+        break;
+
+        case GLFW_KEY_A:
+        return_action('A');
+
+        break;
+
+        case GLFW_KEY_B:
+        return_action('B');
+
+        break;
+
+        case GLFW_KEY_C:
+        return_action('C');
+
+        break;
+
+        case GLFW_KEY_D:
+        return_action('D');
+
+        break;
+
+        case GLFW_KEY_E:
+        return_action('E');
+
+        break;
+
+        case GLFW_KEY_F:
+        return_action('F');
+
+        break;
+
+        default:
+            break;
+        }
+}
+
 void Graphics::GraphicsUpdate(const Chip& c8)
 {
     // Update pixels
@@ -162,8 +261,9 @@ void Graphics::GraphicsUpdate(const Chip& c8)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
 }
 
-int Graphics::KeyPressed(){
+void return_action(const char hex)
+{
+Chip chip8;
 
-
-    return 0;
+chip8.KeyPressed(hex);
 }

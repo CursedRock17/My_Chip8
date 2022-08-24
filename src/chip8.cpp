@@ -382,7 +382,7 @@ void Chip::Init(){
 
 }
 
-int Chip::KeyPressed(){
+int Chip::KeyPressed(const char hex){
     return 0;
 }
 
