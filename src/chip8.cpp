@@ -382,26 +382,31 @@ void Chip::Init(){
 
 }
 
-int Chip::KeyPressed(const char hex){
-    return 0;
-}
-
 void Chip::LoadGame(const char* game_name){
     std::cout << game_name << std::endl;
     Init(); //Need to reiniziale to clear everythign
 
-    FILE* game_file = fopen(game_name, "file");
+    std::fstream game_file;
+    game_file.open(game_name, std::ios_base::app);
 
+    std::uint16_t size = game_file.tellg();
+    std::vector<std::uint8_t> buffer(size);
+    
+    game_file.seekg(0, std::ios_base::beg);
 
-    //load program into memory
-    /*
-    for(int j = 0; j < 4000; ++j){
-        memory[j + 512] = buffer[j];
+    if(size > 4096 - 512)
+        std::cout << "Issue, too large" << std::endl;
+    else {
+    //load program into memory starting at 512 or 0x200
+    //Need to maksure it can fit as well
+        for(int i = 0; i < size; ++i){
+            memory[i + 512] = buffer[i];
+        }
     }
-    */
+
+
 
    //make sure it's not too big
-    fclose(game_file);
 }
 
 void Chip::SetKeys(){

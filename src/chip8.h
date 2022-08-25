@@ -4,6 +4,8 @@
 #include <array>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
+#include <vector>
 
 class Chip {
 public:
@@ -16,7 +18,6 @@ void Init();
 void LoadGame(const char* game_name);
 
 void SetKeys();
-int KeyPressed(const char hex);
 
 bool draw_flag;
 

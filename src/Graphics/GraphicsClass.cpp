@@ -264,6 +264,5 @@ void Graphics::GraphicsUpdate(const Chip& c8)
 void return_action(const char hex)
 {
 Chip chip8;
-
-chip8.KeyPressed(hex);
+//We need to tell if their still on the keyboard
 }
