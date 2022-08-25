@@ -17,18 +17,18 @@ void EmulateChip();
 void Init();
 void LoadGame(const char* game_name);
 
-void SetKeys();
+void SetKeys(int hex);
 
-bool draw_flag;
+bool draw_flag = false;
 
 std::array<unsigned char,(64 * 32)> graphics; //Replace with SDL or openGL
 
 private:
 
 //This Memory starts arter 0x200 (512) thats where the interpreter is
-unsigned char memory[4096];
+std::array<unsigned char, 4096> memory;
 
-unsigned char opcode;
+unsigned short opcode; 
 
 unsigned char sound_timer = {0};
 unsigned char delay_timer = {0};
@@ -37,7 +37,7 @@ std::array<unsigned short, 16> stack;
 unsigned short sp = {0}; //Stack Pointer
 
 //Keyboard
-unsigned char key[16];
+std::array<unsigned short, 16> key;
 
 //Registers sections need a few types in the opcode table: NNN, NN, N, X, Y, PC, I, VN
 unsigned char V[16];

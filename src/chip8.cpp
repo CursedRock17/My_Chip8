@@ -4,26 +4,28 @@ Chip::Chip(){}
 Chip::~Chip(){}
 
 void Chip::EmulateChip(){
+
     
     //Fetch Opcode
     opcode = memory[PC] << 8 | memory[PC + 1];
     //It's easier to just premake these memory addresses
 
-    uint16_t nnn = opcode & 0x0FFF; // lowest 12 bits
-    uint8_t n = opcode & 0x000F; // lowest 4 bits
-    uint8_t nn = opcode & 0x00FF; // lowest 8 bits
-    uint8_t x = opcode >> 8 & 0x000F; // lower 4 bits of the high byte
-    uint8_t y = opcode >> 4 & 0x000F; // upper 4 bits of the low byte
+    std::uint16_t nnn = opcode & 0x0FFF; // lowest 12 bits
+    std::uint16_t n = opcode & 0x000F; // lowest 4 bits
+    std::uint16_t nn = opcode & 0x00FF; // lowest 8 bits
+    std::uint16_t x = (opcode & 0x0F00) >> 8; // lower 4 bits of the high byte
+    std::uint16_t y = (opcode & 0x00F0) >> 4; // upper 4 bits of the low byte
 
     //Decode Opcode - Convert from big endian to regular binary
+
     switch(opcode & 0xF000){
     // Some Opcodes //
 
     //We need to set I to the adress NNN by using ANNN
     //Execute opcodes - Go from current to what we need
     case 0x0000: 
-        switch(n){ // Have to check the lower 4 bits after checking upper 4
-            case 0x0000:
+        switch(opcode){ // Have to check the lower 4 bits after checking upper 4
+            case 0x00E0:
             //Clear the screen
             //Replace all the values with 0, the hexcode for black
             graphics.fill(0);
@@ -31,7 +33,7 @@ void Chip::EmulateChip(){
             PC += 2;
             break;
             
-            case 0x000E: //Return from subroutine
+            case 0x00EE: //Return from subroutine
             sp--;
             PC = stack[sp];
             PC += 2;
@@ -57,44 +59,40 @@ void Chip::EmulateChip(){
         break;
 
     case 0x3000: //Skip the next instruction if Vx = NN, normally a jump to the next code block
-        if(V[x] == V[nn]){
-            //V[0xF] = 1; //Carry
-            PC += 4;
-        }
-        else 
+        PC += 2;
+        if(V[x] == nn){
             PC += 2;
+        }
         break;
     
-    case 0x0004:
-        if(V[x] != V[nn]){
+    case 0x4000:
+        if(V[x] != nn){
             PC += 2;
         }
+        PC += 2;
+        break;
+
+    case 0x5000: //if Vx == Vy skip the next instruction, jumping a code block
+        if(V[x] == V[y])
+            PC += 2;
+        
+        PC += 2;
+        break;
+
+
+    case 0x6000: //Just set Vx to nn
+        V[x] = nn;
+        PC += 2;
+
+        break;
+
+    case 0x7000: // Set Vx to nn + Vx or add nn
+        V[x] += nn;
 
         PC += 2;
         break;
 
-    case 0x0005: //if Vx == Vy skip the next instruction, jumping a code block
-        if(V[x] == V[y])
-            PC += 4;
-        else 
-            PC += 2;
-
-        break;
-
-
-    case 0x0006: //Just set Vx to nn
-        V[x] = nn;
-        PC++;
-
-        break;
-
-    case 0x0007: // Set Vx to nn + Vx or add nn
-        V[x] += nn;
-
-        PC += 4;
-        break;
-
-    case 0x0008:
+    case 0x8000:
         switch(n){
             case 0x0000: //Have to get to 0000 in binary (If & is exclusive), Set Vx to Vy, change those registries
             /*
@@ -172,7 +170,7 @@ void Chip::EmulateChip(){
 
             break;
 
-            case 0x0008: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
+            case 0x000E: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
             if((V[x] & 7) == 1)
                 V[0xF] = 1;
             else 
@@ -189,7 +187,7 @@ void Chip::EmulateChip(){
 
         break;
 
-    case 0x0009: // If Vx != Vy skip the next instruction
+    case 0x9000: // If Vx != Vy skip the next instruction
     if(V[x] != V[y])
         PC += 4;
     else 
@@ -219,6 +217,9 @@ void Chip::EmulateChip(){
 
     case 0xD000: //Draw function
     {
+        draw_flag = true;
+        PC += 2;
+
         unsigned short x = V[(opcode & 0x0F00 >> 8) >> 8];
         unsigned short y = V[(opcode & 0x00F0) >> 4];
         unsigned short height = opcode & 0x000F;
@@ -236,14 +237,12 @@ void Chip::EmulateChip(){
             }
         }
 
-    draw_flag = true;
-    PC += 2;
     }
 
     break;
 
     case 0xE000:{
-        switch(opcode & 0x00FF){
+        switch(nn){
             //Ex9e skips the next instruction if
             //the key stored in VX is pressde
             case 0x009E:
@@ -265,7 +264,7 @@ void Chip::EmulateChip(){
     
 
     case 0xF000:{
-        switch(opcode & 0x00FF){
+        switch(nn){
             case 0x0007: // Set Vx to the delay timer value
             V[x] = delay_timer;
             PC += 2;
@@ -273,15 +272,15 @@ void Chip::EmulateChip(){
 
             case 0x000A: //Store the value of a key press in Vx
             {
-            bool has_pressed = false;
+            bool has_pressed = true;
                 for(const auto& each_key : key){
                     if(0 != each_key){
                         V[x] = I;
-                        has_pressed = true;
+                        has_pressed = false;
                     }
             }
 
-            if(!has_pressed)
+            if(has_pressed)
                 return;
             PC += 2;
             }
@@ -358,57 +357,53 @@ void Chip::Init(){
 
     //Clear Display, stack, registers, memory
     std::fill_n(V, 16, 0);
-
     for(int sc = 0; sc < 16; sc++){
         stack[sc] = 0;
     }
 
-    std::fill_n(memory, 4096, 0);
-
+    memory.fill(0);
     graphics.fill(0);
+    key.fill(0);
 
-    std::fill_n(key, 16, 0);
-
-    for(int i = 0; i < 80; ++i){
     //Load Fontset
+    for(int i = 0; i < 80; ++i){
         memory[i] = fontset[i];
-
-    //Reset Timers
-        sound_timer = 0;
-        delay_timer = 0;
-
-        draw_flag = true;
     }
+    //Reset Timers
+    sound_timer = 0;
+    delay_timer = 0;
+    draw_flag = false;
 
 }
 
 void Chip::LoadGame(const char* game_name){
-    std::cout << game_name << std::endl;
-    Init(); //Need to reiniziale to clear everythign
-
-    std::fstream game_file;
-    game_file.open(game_name, std::ios_base::app);
-
-    std::uint16_t size = game_file.tellg();
-    std::vector<std::uint8_t> buffer(size);
-    
+    std::ifstream game_file(game_name, std::ios::binary | std::ios::ate);
+    std::ifstream::pos_type file_size = game_file.tellg();
+    std::vector<std::uint8_t> buffer(file_size);
     game_file.seekg(0, std::ios_base::beg);
+    game_file.read(reinterpret_cast<char*>(buffer.data()), file_size);
 
-    if(size > 4096 - 512)
-        std::cout << "Issue, too large" << std::endl;
+
+    if(file_size > 4096 - 512)
+        std::cout << "Issue, ROM file too large: " << file_size << std::endl;
     else {
     //load program into memory starting at 512 or 0x200
     //Need to maksure it can fit as well
-        for(int i = 0; i < size; ++i){
+        for(int i = 0; i < file_size; ++i){
             memory[i + 512] = buffer[i];
         }
     }
 
-
-
-   //make sure it's not too big
 }
 
-void Chip::SetKeys(){
+void Chip::SetKeys(int hex){
+    if(key[hex] == 0){
+        key[hex] = 1;
+        std::cout << "Press: " << opcode << std::endl;
+    }
 
+    if(key[hex] == 1){
+        key[hex] = 0;
+        std::cout << "Release: " << opcode << std::endl;
+    }
 }

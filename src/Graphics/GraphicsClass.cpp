@@ -75,15 +75,6 @@ int Graphics::GraphicsRun(Chip chip){
 	EBO1.Unbind();
 
     GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
-
-
-    //Clears the screen buy setting all the bits to black
-    for(GLuint w = 0; w < img_width; w++){
-        for(GLuint h = 0; h < img_height; h++){
-            screenData[h][w][0] = screenData[h][w][1] = screenData[h][w][2] = 0;
-        }
-    }
-
     GLuint texture;
 
     glGenTextures(1, &texture);
@@ -121,7 +112,7 @@ int Graphics::GraphicsRun(Chip chip){
 		// Tell OpenGL which Shader Program we want to use
 		shaderProgram.Activate();
         //You can only create a scale after creating the shader program
-        glUniform1f(uniID, 0.5f);
+        glUniform1f(uniID, 0.85f); 
         glBindTexture(GL_TEXTURE_2D, texture);
 		// Bind the VAO so OpenGL knows to use it
 		VAO1.Bind();
@@ -151,92 +142,92 @@ int Graphics::GraphicsRun(Chip chip){
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (action == GLFW_PRESS)
+    if (action == GLFW_PRESS || action == GLFW_RELEASE)
         switch (key)
         {
         case GLFW_KEY_0:
-        return_action('0');
+        return_action(0x0000);
 
         break;
 
         case GLFW_KEY_1:
-        return_action('1');
+        return_action(0x0001);
 
         break;
 
         case GLFW_KEY_2:
-        return_action('2');
+        return_action(0x0002);
 
 
         break;
 
         case GLFW_KEY_3:
-        return_action('3');
+        return_action(0x0003);
 
 
         break;
 
         case GLFW_KEY_4:
-        return_action('4');
+        return_action(0x0004);
 
         break;
 
         case GLFW_KEY_5:
-        return_action('5');
+        return_action(0x0005);
 
         break;
 
         case GLFW_KEY_6:
-        return_action('6');
+        return_action(0x0006);
 
 
         break;
 
         case GLFW_KEY_7:
-        return_action('7');
+        return_action(0x0007);
 
 
         break;
 
         case GLFW_KEY_8:
-        return_action('8');
+        return_action(0x0008);
 
 
         break;
 
         case GLFW_KEY_9:
-        return_action('9');
+        return_action(0x0009);
 
 
         break;
 
         case GLFW_KEY_A:
-        return_action('A');
+        return_action(0x000A);
 
         break;
 
         case GLFW_KEY_B:
-        return_action('B');
+        return_action(0x000B);
 
         break;
 
         case GLFW_KEY_C:
-        return_action('C');
+        return_action(0x000C);
 
         break;
 
         case GLFW_KEY_D:
-        return_action('D');
+        return_action(0x000D);
 
         break;
 
         case GLFW_KEY_E:
-        return_action('E');
+        return_action(0x000E);
 
         break;
 
         case GLFW_KEY_F:
-        return_action('F');
+        return_action(0x000F);
 
         break;
 
@@ -248,10 +239,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void Graphics::GraphicsUpdate(const Chip& c8)
 {
     // Update pixels
-    
     for (GLuint y = 0; y < img_height; ++y)
         for (GLuint x = 0; x < img_width; ++x)
-            if(0 == c8.graphics[y*64 + x]){
+            if(c8.graphics[y*64 + x] == 0){
                 screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0; // Black: 0
             }
             else {
@@ -261,8 +251,9 @@ void Graphics::GraphicsUpdate(const Chip& c8)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
 }
 
-void return_action(const char hex)
+void return_action(int hex)
 {
 Chip chip8;
-//We need to tell if their still on the keyboard
+//We need to tell if they're still on the keyboard
+chip8.SetKeys(hex);
 }

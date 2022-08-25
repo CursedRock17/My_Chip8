@@ -23,13 +23,11 @@ int main(int argc, char** argv){
         chip.EmulateChip();
 
         if(chip.draw_flag){
+            chip.draw_flag = false;
             int ender = gfx.GraphicsRun(chip);
             if(ender != 0)
                 should_stop = true;
         }
-
-        
-        chip.SetKeys();
     }
 
     return 0;

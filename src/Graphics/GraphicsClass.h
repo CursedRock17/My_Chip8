@@ -35,5 +35,5 @@ private:
 
 //For the GLFW input
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void return_action(const char hex);
+void return_action(int hex);
 #endif
