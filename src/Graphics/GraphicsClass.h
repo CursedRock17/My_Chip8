@@ -23,14 +23,13 @@ public:
 
 private:
     GLFWwindow* window;
-    GLuint screenData[32][64][3];
+    GLuint screenData[32*64];
 
     void GraphicsUpdate(const Chip& c8);
 
     //Creating the Texure
     GLuint img_width = 64;
     GLuint img_height = 32;
-
 };
 
 //For the GLFW input

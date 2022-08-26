@@ -141,7 +141,7 @@ int Graphics::GraphicsRun(Chip chip){
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+{   //May switch to using left side of keyboard
     if (action == GLFW_PRESS || action == GLFW_RELEASE)
         switch (key)
         {
@@ -241,14 +241,15 @@ void Graphics::GraphicsUpdate(const Chip& c8)
     // Update pixels
     for (GLuint y = 0; y < img_height; ++y)
         for (GLuint x = 0; x < img_width; ++x)
-            if(c8.graphics[y*64 + x] == 0){
-                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0; // Black: 0
+            if(c8.graphics[(y*img_width) + x] == 0){
+                //screenData[(y*img_width) + x] = 0; // Black: 0
             }
             else {
-                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0xFF; // White: 0xFF
+                //screenData[(y*img_width) + x] = 0xFF; // White: 0xFF
             }
     // Update texture
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
+
 }
 
 void return_action(int hex)

@@ -11,12 +11,9 @@ int main(int argc, char** argv){
     //Graphics setup:
     Graphics gfx;
 
-    chip.Init();
-    chip.LoadGame("Replace Name");
-
-
     bool should_stop = false;
 
+    chip.Init();
     chip.LoadGame(argv[1]);
 
     while(!should_stop){
@@ -24,6 +21,7 @@ int main(int argc, char** argv){
 
         if(chip.draw_flag){
             chip.draw_flag = false;
+            std::cout << "draw_flag" << std::endl;
             int ender = gfx.GraphicsRun(chip);
             if(ender != 0)
                 should_stop = true;

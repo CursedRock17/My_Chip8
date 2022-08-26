@@ -8,19 +8,21 @@ void Chip::EmulateChip(){
     
     //Fetch Opcode
     opcode = memory[PC] << 8 | memory[PC + 1];
+    //Move to next instruction before other stuff
+    PC += 2;
     //It's easier to just premake these memory addresses
 
     std::uint16_t nnn = opcode & 0x0FFF; // lowest 12 bits
-    std::uint16_t n = opcode & 0x000F; // lowest 4 bits
-    std::uint16_t nn = opcode & 0x00FF; // lowest 8 bits
+    std::uint8_t n = opcode & 0x000F; // lowest 4 bits
+    std::uint8_t nn = opcode & 0x00FF; // lowest 8 bits
     std::uint16_t x = (opcode & 0x0F00) >> 8; // lower 4 bits of the high byte
     std::uint16_t y = (opcode & 0x00F0) >> 4; // upper 4 bits of the low byte
 
     //Decode Opcode - Convert from big endian to regular binary
 
+    std::cout << "Code: " << opcode << std::endl;
     switch(opcode & 0xF000){
     // Some Opcodes //
-
     //We need to set I to the adress NNN by using ANNN
     //Execute opcodes - Go from current to what we need
     case 0x0000: 
@@ -30,13 +32,11 @@ void Chip::EmulateChip(){
             //Replace all the values with 0, the hexcode for black
             graphics.fill(0);
             draw_flag = true;
-            PC += 2;
             break;
             
             case 0x00EE: //Return from subroutine
             sp--;
             PC = stack[sp];
-            PC += 2;
             break;
 
             default: 
@@ -59,7 +59,6 @@ void Chip::EmulateChip(){
         break;
 
     case 0x3000: //Skip the next instruction if Vx = NN, normally a jump to the next code block
-        PC += 2;
         if(V[x] == nn){
             PC += 2;
         }
@@ -69,27 +68,22 @@ void Chip::EmulateChip(){
         if(V[x] != nn){
             PC += 2;
         }
-        PC += 2;
         break;
 
     case 0x5000: //if Vx == Vy skip the next instruction, jumping a code block
         if(V[x] == V[y])
             PC += 2;
         
-        PC += 2;
         break;
 
 
     case 0x6000: //Just set Vx to nn
         V[x] = nn;
-        PC += 2;
 
         break;
 
     case 0x7000: // Set Vx to nn + Vx or add nn
         V[x] += nn;
-
-        PC += 2;
         break;
 
     case 0x8000:
@@ -103,25 +97,21 @@ void Chip::EmulateChip(){
             */
             V[x] = V[y];
 
-            PC += 2;
             break;
 
             case 0x0001:  //Set Vx to Vx OR Vy
             V[x] |=  V[y];
 
-            PC += 2;
             break;
 
             case 0x0002: //Set Vx to Vx AND Vy
             V[x] &= V[y];
 
-            PC += 2;
             break;
 
             case 0x0003: //Set Vx to Vx XOR Vy
             V[x] ^= V[y];
 
-            PC += 2;
             break;
 
             case 0x0004: // Set Vx to Vx + Vy, then must set Vf to carry;
@@ -133,7 +123,6 @@ void Chip::EmulateChip(){
             else 
                 //Otherwise just set VF to 0
                 V[0xF] = 0;
-            PC += 2;
 
             break;
 
@@ -144,7 +133,6 @@ void Chip::EmulateChip(){
                 V[0xF] = 0;
             V[x] -= V[y];
 
-            PC += 2;
 
             break;
 
@@ -155,8 +143,6 @@ void Chip::EmulateChip(){
                 V[0xF] = 0;
             
             V[x] >>= 1;
-            PC += 2;
-
             break;
 
             case 0x0007: // Set Vx to Vy - Vx, if Vy > Vx then there's a borrow, we can just check in reverse order
@@ -166,8 +152,6 @@ void Chip::EmulateChip(){
                 V[0xF] = 0;
 
             V[x] = V[y] - V[x];
-            PC += 2;
-
             break;
 
             case 0x000E: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
@@ -181,7 +165,6 @@ void Chip::EmulateChip(){
             0011 = 3 if you move it the left 1, you get 0110
             or 0420 in its place which is 6. 3 * 2 = 6
             */
-            PC += 2;
             break;
         }
 
@@ -189,20 +172,15 @@ void Chip::EmulateChip(){
 
     case 0x9000: // If Vx != Vy skip the next instruction
     if(V[x] != V[y])
-        PC += 4;
-    else 
         PC += 2;
     break;
 
     case 0xA000: //This is ANNN, the start of the letters, it sets I to nnn, it turns to hex instead of numbers
     I = nnn;   
-    PC += 2; 
-
     break;
 
     case 0xB000: // Jump to location nnn + V0 then set the program counter to that location
     PC = nnn + V[0x0];
-
     break;
 
     case 0xC000: { //Set Vx to random byte AND nn, need a random number for the byte between 0 to 255
@@ -210,7 +188,6 @@ void Chip::EmulateChip(){
     int rand_byte = rand()% 255;
     //This switch case needs brackets becyase it has private variables in the scope
     V[x] = nn & rand_byte;
-    PC += 2;
 
     break;
     }
@@ -218,7 +195,6 @@ void Chip::EmulateChip(){
     case 0xD000: //Draw function
     {
         draw_flag = true;
-        PC += 2;
 
         unsigned short x = V[(opcode & 0x0F00 >> 8) >> 8];
         unsigned short y = V[(opcode & 0x00F0) >> 4];
@@ -247,15 +223,11 @@ void Chip::EmulateChip(){
             //the key stored in VX is pressde
             case 0x009E:
                 if(key[V[x]] != 0)
-                    PC += 4;
-                else 
                     PC += 2;
             break;
 
             case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
                 if(key[V[x]] == 1)
-                    PC += 4;
-                else 
                     PC += 2;
             break;
         }
@@ -267,7 +239,6 @@ void Chip::EmulateChip(){
         switch(nn){
             case 0x0007: // Set Vx to the delay timer value
             V[x] = delay_timer;
-            PC += 2;
             break;
 
             case 0x000A: //Store the value of a key press in Vx
@@ -282,40 +253,33 @@ void Chip::EmulateChip(){
 
             if(has_pressed)
                 return;
-            PC += 2;
             }
             break;
 
             case 0x0015: //Set Delay Timer to Vx
             delay_timer = V[x];
-
-            PC += 2;
             break;
 
             case 0x0018: // Set sound timer to Vx
             sound_timer = V[x];
 
-            PC += 2;
             break;
 
             case 0x001E: // Add I and Vx into I
             V[0xF] = (I + V[x] > 0xFFF) ? 1 : 0;
             I += V[x];
 
-            PC += 2;
             break;
 
             case 0x0029: // I equals to the location of sprtite for digit Vx
             I = V[x] * 0x5;
 
-            PC += 2;
             break;
 
             case 0x0033: //0xFX33
                 memory[I] = V[x] / 100;
                 memory[I + 1] = (V[x] / 10) % 10;
                 memory[I + 2] = (V[x] / 100) % 10;
-                PC += 2;
             break;
 
             case 0x0055: //Store registers V0 through Vx in memory starting at I
@@ -323,7 +287,6 @@ void Chip::EmulateChip(){
                 memory[I + register_index] = V[register_index];
             }
 
-            PC += 2;
             break;
 
             case 0x0065: // Read registers V0 through Vx from memory starting at I
@@ -331,7 +294,6 @@ void Chip::EmulateChip(){
                 V[mem_index] = memory[I + mem_index];
             }
 
-            PC += 2;
             break;
         }
         break;
