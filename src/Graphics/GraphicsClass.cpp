@@ -26,17 +26,16 @@ int Graphics::GraphicsRun(Chip chip){
 	// Indices for vertices order
 	GLuint indices[] =
 	{
-        0, 2, 1, //Upper Traingle
+        0, 1, 2, //Upper Traingle
         0, 3, 2 //Lower Triagnke
 	};
-
 
     //Need to do this to make
     #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    window = glfwCreateWindow(1024, 768, "Chip8", NULL, NULL);
+    window = glfwCreateWindow(WINDOW_HEIGHT, WINDOW_WIDTH, "Chip8", NULL, NULL);
 
     if(!window){
         std::cout << "Failed to create Window" << std::endl;
@@ -44,13 +43,15 @@ int Graphics::GraphicsRun(Chip chip){
         return -1;
     }
 
-
     glfwMakeContextCurrent(window);
-
-    gladLoadGL();
+    
     glfwSetKeyCallback(window, key_callback);
+    gladLoadGL();
 
-
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
+      std::cerr << "Failed to initialize GLAD" << '\n';
+      return -1;
+    }
     glViewport(0, 0, 1024, 768);
 
     //Don't know why I have to copy the full path
@@ -69,6 +70,7 @@ int Graphics::GraphicsRun(Chip chip){
 	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	VAO1.LinkAttrib(VBO1, 2, 3, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
+
 	// Unbind all to prevent accidentally modifying them
 	VAO1.Unbind();
 	VBO1.Unbind();
@@ -80,7 +82,6 @@ int Graphics::GraphicsRun(Chip chip){
     glGenTextures(1, &texture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-
 
     //Generate the textrure
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screenData);
@@ -98,11 +99,12 @@ int Graphics::GraphicsRun(Chip chip){
     shaderProgram.Activate();
     glUniform1i(tex_uni, 0);
 
-// Main while loop
+    // Specify the color of the background
+	glClearColor(0.07f, 0.13f, 0.17f, 1.0f); 
+    
+    // Main while loop
 	while (!glfwWindowShouldClose(window))
 	{
-		// Specify the color of the background
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0f); 
 		// Clean the back buffer and assign the new color to it
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -239,16 +241,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void Graphics::GraphicsUpdate(const Chip& c8)
 {
     // Update pixels
-    for (GLuint y = 0; y < img_height; ++y)
-        for (GLuint x = 0; x < img_width; ++x)
-            if(c8.graphics[(y*img_width) + x] == 0){
-                //screenData[(y*img_width) + x] = 0; // Black: 0
-            }
-            else {
-                //screenData[(y*img_width) + x] = 0xFF; // White: 0xFF
-            }
+    for (int y = 0; y < 32; ++y)
+        for (int x = 0; x < 64; ++x)
+            if(0 == c8.graphics[y*64 + x])
+                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0; // Black
+            else
+                screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0xFF; // White
+
     // Update texture
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
 
 }
 

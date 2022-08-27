@@ -5,6 +5,11 @@
 #include <iostream>
 
 int main(int argc, char** argv){
+    if(argc < 2) {
+        std::cout << "Chip8 Rom" << std::endl;
+        return 1;
+    }
+
     //Chip setup
     Chip chip;
 
@@ -20,11 +25,10 @@ int main(int argc, char** argv){
         chip.EmulateChip();
 
         if(chip.draw_flag){
-            chip.draw_flag = false;
-            std::cout << "draw_flag" << std::endl;
             int ender = gfx.GraphicsRun(chip);
             if(ender != 0)
                 should_stop = true;
+            chip.draw_flag = false;
         }
     }
 

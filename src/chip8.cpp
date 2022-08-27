@@ -4,10 +4,8 @@ Chip::Chip(){}
 Chip::~Chip(){}
 
 void Chip::EmulateChip(){
-
-    
     //Fetch Opcode
-    opcode = memory[PC] << 8 | memory[PC + 1];
+    opcode = (memory[PC] << 8) | memory[PC + 1];
     //Move to next instruction before other stuff
     PC += 2;
     //It's easier to just premake these memory addresses
@@ -19,8 +17,6 @@ void Chip::EmulateChip(){
     std::uint16_t y = (opcode & 0x00F0) >> 4; // upper 4 bits of the low byte
 
     //Decode Opcode - Convert from big endian to regular binary
-
-    std::cout << "Code: " << opcode << std::endl;
     switch(opcode & 0xF000){
     // Some Opcodes //
     //We need to set I to the adress NNN by using ANNN
@@ -32,23 +28,22 @@ void Chip::EmulateChip(){
             //Replace all the values with 0, the hexcode for black
             graphics.fill(0);
             draw_flag = true;
-            break;
+                break;
             
             case 0x00EE: //Return from subroutine
-            sp--;
-            PC = stack[sp];
-            break;
+            PC = stack[--sp];
+                break;
 
             default: 
                 std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
         }
-    break;
+        break;
 
     //More opcodes - Probably going to move in list order
     //They're already in big endian just remove the non-hex letters
 
     case 0x1000: //1NNN - Jump to address NNN which is always opcode 0x0FFF
-        PC = nnn;
+            PC = nnn;
         break;
 
     case 0x2000:
@@ -73,17 +68,16 @@ void Chip::EmulateChip(){
     case 0x5000: //if Vx == Vy skip the next instruction, jumping a code block
         if(V[x] == V[y])
             PC += 2;
-        
         break;
-
 
     case 0x6000: //Just set Vx to nn
         V[x] = nn;
-
+    
         break;
 
     case 0x7000: // Set Vx to nn + Vx or add nn
         V[x] += nn;
+        
         break;
 
     case 0x8000:
@@ -96,45 +90,39 @@ void Chip::EmulateChip(){
             since they;re not compatible the number becomes 0000 or this new case
             */
             V[x] = V[y];
-
-            break;
+                break;
 
             case 0x0001:  //Set Vx to Vx OR Vy
             V[x] |=  V[y];
-
-            break;
+                break;
 
             case 0x0002: //Set Vx to Vx AND Vy
             V[x] &= V[y];
-
-            break;
+                break;
 
             case 0x0003: //Set Vx to Vx XOR Vy
             V[x] ^= V[y];
-
-            break;
+                break;
 
             case 0x0004: // Set Vx to Vx + Vy, then must set Vf to carry;
             V[x] += V[y];
-
             if((V[x]) > 0x00FF) //Because we do the math beforehand we can check V[x]
                 //We need to set VF (F is a hexadecimal) to 1, also known as a carry
                 V[0xF] = 1;
-            else 
+            else {
                 //Otherwise just set VF to 0
                 V[0xF] = 0;
-
-            break;
+            }
+                break;
 
             case 0x0005: //Set Vx to Vx - Vy, if Vx > Vy we need to borrow
             if(V[x] > V[y])
                 V[0xF] = 1;
-            else 
+            else {
                 V[0xF] = 0;
+            }
             V[x] -= V[y];
-
-
-            break;
+                break;
 
             case 0x0006: //Store the least signifcant bit of Vx in Vf then shifts Vx to the right 1
             if((V[x] & 1) == 1)
@@ -143,7 +131,7 @@ void Chip::EmulateChip(){
                 V[0xF] = 0;
             
             V[x] >>= 1;
-            break;
+                break;
 
             case 0x0007: // Set Vx to Vy - Vx, if Vy > Vx then there's a borrow, we can just check in reverse order
             if (V[y] > V[x])
@@ -152,70 +140,67 @@ void Chip::EmulateChip(){
                 V[0xF] = 0;
 
             V[x] = V[y] - V[x];
-            break;
+                break;
 
             case 0x000E: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
             if((V[x] & 7) == 1)
                 V[0xF] = 1;
             else 
                 V[0xF] = 0;
-            
             V[x] <<= 1; //This also counts as multiplication by 2 for example:
             /*
             0011 = 3 if you move it the left 1, you get 0110
             or 0420 in its place which is 6. 3 * 2 = 6
             */
-            break;
+                break;
+            default:
+                std::cout << "Unknown opcode" << opcode << std::endl;
         }
-
         break;
 
     case 0x9000: // If Vx != Vy skip the next instruction
-    if(V[x] != V[y])
+    if(V[x] != V[y]){
         PC += 2;
-    break;
+    }
+        break;
 
     case 0xA000: //This is ANNN, the start of the letters, it sets I to nnn, it turns to hex instead of numbers
     I = nnn;   
-    break;
+        break;
 
     case 0xB000: // Jump to location nnn + V0 then set the program counter to that location
     PC = nnn + V[0x0];
-    break;
+        break;
 
     case 0xC000: { //Set Vx to random byte AND nn, need a random number for the byte between 0 to 255
     srand(time(0));
     int rand_byte = rand()% 255;
     //This switch case needs brackets becyase it has private variables in the scope
     V[x] = nn & rand_byte;
-
-    break;
+        break;
     }
 
-    case 0xD000: //Draw function
+    case 0xD000: //Draw function, starting a memory location (Vx, Vy)
     {
-        draw_flag = true;
-
-        unsigned short x = V[(opcode & 0x0F00 >> 8) >> 8];
-        unsigned short y = V[(opcode & 0x00F0) >> 4];
-        unsigned short height = opcode & 0x000F;
-        unsigned short pixel;
-
-        V[0xF] = 0;
-        for(int yLine = 0; yLine < height; yLine++){
-            pixel = memory[I + yLine];
-            for(int xline = 0; xline < 8; xline++){
-                if((pixel * (0x80 >> xline)) != 0){
-                    if(graphics[(x + xline + (y + yLine) * 64)] == 1)
-                        V[0xF] = 1;
-                    graphics[x + xline + (y + yLine * 64)] ^= 1; 
+            
+            uint8_t Vx = V[x];
+            uint8_t Vy = V[y];
+            uint8_t pixel;
+            V[0xF] = 0;
+            for(int yline = 0; yline < n; yline++) {
+                pixel = memory[I + yline];
+                for(int xline = 0; xline < 8; xline++) {
+                    if (0 != (pixel & (0x80 >> xline))) {
+                        if (1 == graphics[Vx + xline + ((Vy + yline) * 64)]) {
+                            V[0xF] = 1;
+                        }
+                        graphics[Vx + xline + ((Vy + yline) * 64)] ^= 1;
+                    }
                 }
             }
-        }
-
+            draw_flag = true;
+        break;
     }
-
-    break;
 
     case 0xE000:{
         switch(nn){
@@ -224,14 +209,18 @@ void Chip::EmulateChip(){
             case 0x009E:
                 if(key[V[x]] != 0)
                     PC += 2;
-            break;
+        
+                break;
 
             case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
                 if(key[V[x]] == 1)
                     PC += 2;
-            break;
+                break;
+
+            default: 
+                std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
         }
-    break;
+        break;
     }
     
 
@@ -239,10 +228,11 @@ void Chip::EmulateChip(){
         switch(nn){
             case 0x0007: // Set Vx to the delay timer value
             V[x] = delay_timer;
-            break;
+                break;
 
             case 0x000A: //Store the value of a key press in Vx
             {
+                
             bool has_pressed = true;
                 for(const auto& each_key : key){
                     if(0 != each_key){
@@ -251,50 +241,49 @@ void Chip::EmulateChip(){
                     }
             }
 
-            if(has_pressed)
-                return;
+            if(has_pressed){
+                break;
             }
-            break;
+                break;
+            }
 
             case 0x0015: //Set Delay Timer to Vx
             delay_timer = V[x];
-            break;
+                break;
 
             case 0x0018: // Set sound timer to Vx
             sound_timer = V[x];
-
-            break;
+                break;
 
             case 0x001E: // Add I and Vx into I
             V[0xF] = (I + V[x] > 0xFFF) ? 1 : 0;
             I += V[x];
-
-            break;
+                break;
 
             case 0x0029: // I equals to the location of sprtite for digit Vx
             I = V[x] * 0x5;
-
-            break;
+                break;
 
             case 0x0033: //0xFX33
                 memory[I] = V[x] / 100;
                 memory[I + 1] = (V[x] / 10) % 10;
                 memory[I + 2] = (V[x] / 100) % 10;
-            break;
+                break;
 
             case 0x0055: //Store registers V0 through Vx in memory starting at I
             for(int register_index = 0; register_index < 16; register_index++){
                 memory[I + register_index] = V[register_index];
             }
-
-            break;
+                break;
 
             case 0x0065: // Read registers V0 through Vx from memory starting at I
             for(int mem_index = 0; mem_index < 16; mem_index++){
                 V[mem_index] = memory[I + mem_index];
             }
+                break;
 
-            break;
+            default: 
+                std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
         }
         break;
     }
@@ -308,7 +297,12 @@ void Chip::EmulateChip(){
                 std::cout << "Beep" << std::endl;
             --sound_timer;
         }
+
+        default: 
+            std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
     }
+
+    std::cout << PC << std::endl;
 }
 void Chip::Init(){
     //Begin loading the game and prepping the registers
@@ -329,13 +323,14 @@ void Chip::Init(){
 
     //Load Fontset
     for(int i = 0; i < 80; ++i){
-        memory[i] = fontset[i];
+       memory[i] = fontset[i];
     }
     //Reset Timers
     sound_timer = 0;
     delay_timer = 0;
     draw_flag = false;
 
+    srand(time(NULL));
 }
 
 void Chip::LoadGame(const char* game_name){

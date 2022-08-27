@@ -26,7 +26,7 @@ std::array<unsigned char,(64 * 32)> graphics; //Replace with SDL or openGL
 private:
 
 //This Memory starts arter 0x200 (512) thats where the interpreter is
-std::array<unsigned char, 4096> memory;
+std::array<unsigned short, 4096> memory;
 
 unsigned short opcode; 
 
@@ -46,7 +46,7 @@ unsigned short I;
 
 
 //Keypad is made of 16 registers for the Vx and maps 0-9 and A-F, its a 4x4 matrix
-unsigned char fontset[80] =
+std::array<unsigned char, 80> fontset =
 { 
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
