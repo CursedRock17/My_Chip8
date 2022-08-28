@@ -182,7 +182,7 @@ int Graphics::GraphicsRun(Chip chip)
 
                 //Check if the current point in graphics needs to turn black,
                 //We then chnage the color beforehand then draw at the end of the command
-                if(chip.graphics[hi*64 + wi] == 0){
+                if(chip.graphics[hi + wi] == 0){
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 }
                 else {

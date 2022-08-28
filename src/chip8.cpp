@@ -216,7 +216,7 @@ void Chip::EmulateChip(){
                 if(key[V[x]] == 1)
                     PC += 2;
                 break;
-                
+
             default: 
                 std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
         }
@@ -301,8 +301,6 @@ void Chip::EmulateChip(){
         default: 
             std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
     }
-
-    std::cout << PC  << "  " << I << std::endl;
 }
 void Chip::Init(){
     //Begin loading the game and prepping the registers
@@ -340,7 +338,6 @@ void Chip::LoadGame(const char* game_name){
     game_file.seekg(0, std::ios_base::beg);
     game_file.read(reinterpret_cast<char*>(buffer.data()), file_size);
 
-
     if(file_size > 4096 - 512)
         std::cout << "Issue, ROM file too large: " << file_size << std::endl;
     else {
@@ -359,7 +356,7 @@ void Chip::SetKeys(int hex){
         std::cout << "Press: " << opcode << std::endl;
     }
 
-    if(key[hex] == 1){
+    else if(key[hex] == 1){
         key[hex] = 0;
         std::cout << "Release: " << opcode << std::endl;
     }
