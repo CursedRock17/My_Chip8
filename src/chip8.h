@@ -28,7 +28,7 @@ private:
 //This Memory starts arter 0x200 (512) thats where the interpreter is
 std::array<unsigned short, 4096> memory;
 
-unsigned short opcode; 
+unsigned short opcode{}; 
 
 unsigned char sound_timer = {0};
 unsigned char delay_timer = {0};
@@ -41,8 +41,8 @@ std::array<unsigned short, 16> key;
 
 //Registers sections need a few types in the opcode table: NNN, NN, N, X, Y, PC, I, VN
 unsigned char V[16];
-unsigned short PC = {0};
-unsigned short I;
+unsigned short PC = {0x200};
+unsigned short I{};
 
 
 //Keypad is made of 16 registers for the Vx and maps 0-9 and A-F, its a 4x4 matrix

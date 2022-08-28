@@ -202,6 +202,7 @@ void Chip::EmulateChip(){
     }
 
     case 0xE000:{
+        
         switch(nn){
             //Ex9e skips the next instruction if
             //the key stored in VX is pressde
@@ -215,7 +216,7 @@ void Chip::EmulateChip(){
                 if(key[V[x]] == 1)
                     PC += 2;
                 break;
-
+                
             default: 
                 std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
         }

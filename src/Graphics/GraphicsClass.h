@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <SDL2/SDL.h>
 
 class Graphics {
 public:
@@ -28,12 +29,12 @@ private:
     //Creating the Texure
     GLuint img_width = 64;
     GLuint img_height = 32;
-    const std::uint16_t modifier = 10;
+    const std::uint16_t modifier = 15;
 
     //General Window Uses
     int WINDOW_HEIGHT = img_height * modifier;
     int WINDOW_WIDTH = img_width * modifier;
-    int PIXEL_SIZE = 12;
+    int PIXEL_SIZE = 14;
 };
 
 //For the GLFW input, needs to be SDL

@@ -1,10 +1,14 @@
 #include "GraphicsClass.h"
+#include <SDL_events.h>
+#include <SDL_render.h>
+#include <SDL_video.h>
 
 Graphics::Graphics(){}
 Graphics::~Graphics(){}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+/*
 int Graphics::GraphicsRun(Chip chip){
     // Init the libraries
     if(!glfwInit())
@@ -84,7 +88,7 @@ int Graphics::GraphicsRun(Chip chip){
     glBindTexture(GL_TEXTURE_2D, texture);
 
     //Generate the textrure
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screenData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, screenData);
     //Going to need to change the image when its moved around and closer
     //We can use soemthing like GL_NEATest with glTexParameteri
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -106,7 +110,7 @@ int Graphics::GraphicsRun(Chip chip){
 	while (!glfwWindowShouldClose(window))
 	{
 		// Clean the back buffer and assign the new color to it
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT );
 
         //Can check to see if we need to color each pixel
         GraphicsUpdate(chip);
@@ -141,6 +145,72 @@ int Graphics::GraphicsRun(Chip chip){
 	glfwTerminate();
 	return 1;
 }
+
+*/
+/*SDL
+*/
+int Graphics::GraphicsRun(Chip chip)
+{
+    //----> Initiailize with the first 5 lines of code
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
+
+    SDL_Init(SDL_INIT_VIDEO);
+    window = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, 0);
+
+    // -----> These two will control how the window will run
+    SDL_Event event;
+    bool run = true;
+
+    // -----> Create a pixel in the shape of a square and initialize it's size
+    SDL_Rect pixel;
+    pixel.h = PIXEL_SIZE;
+    pixel.w = PIXEL_SIZE;
+
+    while(run){
+        //Need to clear the colors and make sure we start by drawing on a black backgrfound
+        SDL_SetRenderDrawColor(renderer, 0,0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        //Go through the size of the graphics
+        for(int hi = 0; hi < 32; ++hi){
+            for(int wi = 0; wi < 64; ++wi){
+                //We need to update this to make sure all the pixels will fit on the screen after being adjusted in size
+                pixel.x = wi * 15;
+                pixel.y = hi * 15;
+
+                //Check if the current point in graphics needs to turn black,
+                //We then chnage the color beforehand then draw at the end of the command
+                if(chip.graphics[hi*64 + wi] == 0){
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                }
+                else {
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                }
+
+                SDL_RenderDrawRect(renderer, &pixel);
+                SDL_RenderFillRect(renderer, &pixel);
+            }
+        }
+
+        SDL_RenderPresent(renderer);
+
+        //Check to make sure the window needs to stay up
+        while(SDL_PollEvent(&event)){
+        if(event.type == SDL_QUIT)
+            run = false;
+        }
+    }
+
+    //Simple destroy loop
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 1;
+}
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {   //May switch to using left side of keyboard
@@ -266,10 +336,8 @@ void Graphics::GraphicsUpdate(const Chip& c8)
     screenData[0][34][0] = screenData[0][34][1] = screenData[0][34][2] = 0xFF; // White
     screenData[0][35][0] = screenData[0][35][1] = screenData[0][35][2] = 0xFF; // White
     */
-
     // Update texture
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
-    glReadPixels(0, 0, 64, 32, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
 
 }
 
