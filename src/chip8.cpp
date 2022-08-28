@@ -181,8 +181,7 @@ void Chip::EmulateChip(){
     }
 
     case 0xD000: //Draw function, starting a memory location (Vx, Vy)
-    {
-            
+    {            
             uint8_t Vx = V[x];
             uint8_t Vy = V[y];
             uint8_t pixel;
@@ -302,7 +301,7 @@ void Chip::EmulateChip(){
             std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
     }
 
-    std::cout << PC << std::endl;
+    std::cout << PC  << "  " << I << std::endl;
 }
 void Chip::Init(){
     //Begin loading the game and prepping the registers

@@ -34,7 +34,7 @@ unsigned char sound_timer = {0};
 unsigned char delay_timer = {0};
 
 std::array<unsigned short, 16> stack;
-unsigned short sp = {0}; //Stack Pointer
+unsigned char sp = {0}; //Stack Pointer
 
 //Keyboard
 std::array<unsigned short, 16> key;

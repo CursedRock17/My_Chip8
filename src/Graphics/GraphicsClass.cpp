@@ -27,7 +27,7 @@ int Graphics::GraphicsRun(Chip chip){
 	GLuint indices[] =
 	{
         0, 1, 2, //Upper Traingle
-        0, 3, 2 //Lower Triagnke
+        0, 3, 2, //Lower Triagnke
 	};
 
     //Need to do this to make
@@ -52,7 +52,7 @@ int Graphics::GraphicsRun(Chip chip){
       std::cerr << "Failed to initialize GLAD" << '\n';
       return -1;
     }
-    glViewport(0, 0, 1024, 768);
+    glViewport(0, 0, WINDOW_HEIGHT, WINDOW_WIDTH);
 
     //Don't know why I have to copy the full path
     Shader shaderProgram("/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Shading/default.vert", "/Users/cursedrock17/Documents/Coding/CPP/Chip8/src/Shading/default.frag");
@@ -243,13 +243,33 @@ void Graphics::GraphicsUpdate(const Chip& c8)
     // Update pixels
     for (int y = 0; y < 32; ++y)
         for (int x = 0; x < 64; ++x)
-            if(0 == c8.graphics[y*64 + x])
+            if(0 == c8.graphics[y*64 + x]){
                 screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0; // Black
-            else
+            }
+            else {
                 screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0xFF; // White
+            }
+
+    /* Manual DAta
+    screenData[4][32][0] = screenData[4][32][1] = screenData[4][32][2] = 0xFF; // White
+    screenData[4][33][0] = screenData[4][33][1] = screenData[4][33][2] = 0xFF; // White
+    screenData[4][34][0] = screenData[4][34][1] = screenData[4][34][2] = 0xFF; // White
+    screenData[4][35][0] = screenData[4][35][1] = screenData[4][35][2] = 0xFF; // White
+    screenData[3][32][0] = screenData[3][32][1] = screenData[3][32][2] = 0xFF; // White
+    screenData[3][35][0] = screenData[3][35][1] = screenData[3][35][2] = 0xFF; // White
+    screenData[2][32][0] = screenData[2][32][1] = screenData[2][32][2] = 0xFF; // White
+    screenData[2][35][0] = screenData[2][35][1] = screenData[2][35][2] = 0xFF; // White
+    screenData[1][32][0] = screenData[1][32][1] = screenData[1][32][2] = 0xFF; // White
+    screenData[1][35][0] = screenData[1][35][1] = screenData[1][35][2] = 0xFF; // White
+    screenData[0][32][0] = screenData[0][32][1] = screenData[0][32][2] = 0xFF; // White
+    screenData[0][33][0] = screenData[0][33][1] = screenData[0][33][2] = 0xFF; // White
+    screenData[0][34][0] = screenData[0][34][1] = screenData[0][34][2] = 0xFF; // White
+    screenData[0][35][0] = screenData[0][35][1] = screenData[0][35][2] = 0xFF; // White
+    */
 
     // Update texture
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img_width, img_height, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
+    glReadPixels(0, 0, 64, 32, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)screenData);
 
 }
 
