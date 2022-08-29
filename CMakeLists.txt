@@ -8,13 +8,11 @@ add_executable(${PROJECT_NAME} main.cpp glad.c )
 
 add_subdirectory(src)
 add_subdirectory(src/Graphics)
-add_subdirectory(src/Shading)
 
 target_link_libraries(${PROJECT_NAME}
 PUBLIC
     chip8
     Graphics
-    Shading
 )
 
 
@@ -23,5 +21,4 @@ PUBLIC
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}/src"
     "${PROJECT_SOURCE_DIR}/src/Graphics"
-    "${PROJECT_SOURCE_DIR}/src/Shading"
 )

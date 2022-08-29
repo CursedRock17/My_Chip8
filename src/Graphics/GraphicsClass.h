@@ -1,13 +1,6 @@
 #ifndef GRAPHICSCLASS_h
 #define GRAPHICSCLASS_h
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "../Shading/shaderClass.h"
-#include"../Shading/VAO.h"
-#include"../Shading/VBO.h"
-#include"../Shading/EBO.h"
 #include "../chip8.h"
 
 #include <cmath>
@@ -20,15 +13,31 @@ public:
     ~Graphics();
 
     int GraphicsRun(Chip chip);
+    void Add_Delay();
+    void Check_Keys(Chip chip);
+    bool Needs_Stop();
+
 private:
-    GLFWwindow* window;
-    GLuint screenData[32][64][3];
 
     void GraphicsUpdate(const Chip& c8);
 
+    //Have these work in tandem, it's a good pracetice to have a class deal with them automatically
+    void GraphicsInit();
+    void GraphicsTerminate();
+
+    //----> Initiailize with the first 5 lines of code
+    // These are SDL specific
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
+    SDL_Rect pixel;
+
+    // -----> These two will control how the window will run
+    SDL_Event event;
+    bool should_stop = false;
+
     //Creating the Texure
-    GLuint img_width = 64;
-    GLuint img_height = 32;
+    const unsigned short img_width = 64;
+    const unsigned short img_height = 32; //Unsigned short is 16 bits
     const std::uint16_t modifier = 15;
 
     //General Window Uses
@@ -37,7 +46,4 @@ private:
     int PIXEL_SIZE = 14;
 };
 
-//For the GLFW input, needs to be SDL
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void return_action(int hex);
 #endif

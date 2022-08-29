@@ -16,20 +16,20 @@ int main(int argc, char** argv){
     //Graphics setup:
     Graphics gfx;
 
-    bool should_stop = false;
-
     chip.Init();
     chip.LoadGame(argv[1]);
 
-    while(!should_stop){
+    while(!gfx.Needs_Stop()){
         chip.EmulateChip();
 
+
         if(chip.draw_flag){
-            int ender = gfx.GraphicsRun(chip);
-            if(ender != 0)
-                should_stop = true;
+            gfx.GraphicsRun(chip);
             chip.draw_flag = false;
+            gfx.Add_Delay();
         }
+
+        gfx.Check_Keys(chip);
     }
 
     return 0;

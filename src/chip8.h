@@ -17,7 +17,7 @@ void EmulateChip();
 void Init();
 void LoadGame(const char* game_name);
 
-void SetKeys(int hex);
+void SetKeys(int index, int power);
 
 bool draw_flag = false;
 

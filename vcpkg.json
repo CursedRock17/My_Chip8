@@ -1,5 +1,5 @@
 {
     "name" : "chip8",
-    "dependencies" : [ "glfw3", "opengl", "glad", "sdl2" ],
+    "dependencies" : [ "glad", "sdl2" ],
     "version" : "1.0" 
 }

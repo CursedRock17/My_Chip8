@@ -16,6 +16,7 @@ void Chip::EmulateChip(){
     std::uint16_t x = (opcode & 0x0F00) >> 8; // lower 4 bits of the high byte
     std::uint16_t y = (opcode & 0x00F0) >> 4; // upper 4 bits of the low byte
 
+
     //Decode Opcode - Convert from big endian to regular binary
     switch(opcode & 0xF000){
     // Some Opcodes //
@@ -350,14 +351,6 @@ void Chip::LoadGame(const char* game_name){
 
 }
 
-void Chip::SetKeys(int hex){
-    if(key[hex] == 0){
-        key[hex] = 1;
-        std::cout << "Press: " << opcode << std::endl;
-    }
-
-    else if(key[hex] == 1){
-        key[hex] = 0;
-        std::cout << "Release: " << opcode << std::endl;
-    }
+void Chip::SetKeys(int index, int power){
+    key[index] = power;
 }
