@@ -22,11 +22,10 @@ int main(int argc, char** argv){
     while(!gfx.Needs_Stop()){
         chip.EmulateChip();
 
-
         if(chip.draw_flag){
             gfx.GraphicsRun(chip);
-            chip.draw_flag = false;
             gfx.Add_Delay();
+            chip.draw_flag = false;
         }
 
         gfx.Check_Keys(chip);

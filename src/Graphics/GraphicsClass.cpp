@@ -20,7 +20,7 @@ Graphics::~Graphics()
 int Graphics::GraphicsRun(Chip chip)
 {
     //Need to clear the colors and make sure we start by drawing on a black backgrfound
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
 
     //Go through the size of the graphics
     GraphicsUpdate(chip);
@@ -37,7 +37,7 @@ void Graphics::GraphicsInit()
     window = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_RENDERER_ACCELERATED);
     renderer = SDL_CreateRenderer(window, -1, 0);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
     SDL_RenderClear(renderer);
 
     //Pixel Size will always be the same, no need to change it
@@ -65,11 +65,12 @@ void Graphics::GraphicsUpdate(const Chip& chip)
 
                 //Check if the current point in graphics needs to turn black,
                 //We then chnage the color beforehand then draw at the end of the command
-                if(chip.graphics[hi + wi] == 0){
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+				//Had to make sure that we can access every single element in graphics
+                if(chip.graphics[hi*64 + wi] == 0){
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1); //Black
                 }
                 else {
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 1); //White
                 }
 
                 SDL_RenderDrawRect(renderer, &pixel);
