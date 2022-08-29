@@ -21,6 +21,7 @@ int Graphics::GraphicsRun(Chip chip)
 {
     //Need to clear the colors and make sure we start by drawing on a black backgrfound
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
+	SDL_RenderClear(renderer);
 
     //Go through the size of the graphics
     GraphicsUpdate(chip);

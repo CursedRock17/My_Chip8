@@ -23,7 +23,11 @@ void Chip::EmulateChip(){
     //We need to set I to the adress NNN by using ANNN
     //Execute opcodes - Go from current to what we need
     case 0x0000: 
-        switch(opcode){ // Have to check the lower 4 bits after checking upper 4
+        switch(nn){ // Have to check the lower 4 bits after checking upper 4
+            case 0x0000:
+            //Should be Ignored by modern computers
+            break;
+
             case 0x00E0:
             //Clear the screen
             //Replace all the values with 0, the hexcode for black
@@ -32,7 +36,8 @@ void Chip::EmulateChip(){
                 break;
             
             case 0x00EE: //Return from subroutine
-            PC = stack[--sp];
+            PC = stack[sp];
+            --sp;
                 break;
 
             default: 
@@ -140,7 +145,7 @@ void Chip::EmulateChip(){
             else 
                 V[0xF] = 0;
 
-            V[x] = V[y] - V[x];
+            V[x] -= V[y];
                 break;
 
             case 0x000E: //Stores the most significnt bit of Vx in Vf then shifts Vx left 1, the opposit of 8XY6
@@ -155,7 +160,7 @@ void Chip::EmulateChip(){
             */
                 break;
             default:
-                std::cout << "Unknown opcode" << opcode << std::endl;
+                std::cout << "Unknown opcode[0x80000]: " << opcode << std::endl;
         }
         break;
 
@@ -175,7 +180,7 @@ void Chip::EmulateChip(){
 
     case 0xC000: { //Set Vx to random byte AND nn, need a random number for the byte between 0 to 255
     srand(time(0));
-    int rand_byte = rand()% 255;
+    unsigned short rand_byte = rand()% 255;
     //This switch case needs brackets becyase it has private variables in the scope
     V[x] = nn & rand_byte;
         break;
@@ -208,25 +213,27 @@ void Chip::EmulateChip(){
             //Ex9e skips the next instruction if
             //the key stored in VX is pressde
             case 0x009E:
-                if(key[V[x]] != 0)
+                if(key[V[x]] != 0){
                     PC += 2;
+                    std::cout << "Chec" << std::endl;
+                }
         
                 break;
 
             case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
-                if(key[V[x]] == 1)
+                if(key[V[x]] == 0)
                     PC += 2;
                 break;
 
             default: 
-                std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
+                std::cout << "Unkown Opcode [0xE000]: " << opcode << std::endl;
         }
         break;
     }
     
 
     case 0xF000:{
-        switch(nn){
+        switch(n){
             case 0x0007: // Set Vx to the delay timer value
             V[x] = delay_timer;
                 break;
@@ -235,15 +242,13 @@ void Chip::EmulateChip(){
             {
                 
             bool has_pressed = true;
+            while(has_pressed){
                 for(const auto& each_key : key){
                     if(0 != each_key){
                         V[x] = I;
                         has_pressed = false;
                     }
-            }
-
-            if(has_pressed){
-                break;
+                }
             }
                 break;
             }
@@ -257,7 +262,7 @@ void Chip::EmulateChip(){
                 break;
 
             case 0x001E: // Add I and Vx into I
-            V[0xF] = (I + V[x] > 0xFFF) ? 1 : 0;
+            //V[0xF] = (I + V[x] > 0xFFF) ? 1 : 0;
             I += V[x];
                 break;
 
@@ -284,7 +289,7 @@ void Chip::EmulateChip(){
                 break;
 
             default: 
-                std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
+                std::cout << "Unkown Opcode [0xF000]: " << opcode << std::endl;
         }
         break;
     }
@@ -300,7 +305,7 @@ void Chip::EmulateChip(){
         }
 
         default: 
-            std::cout << "Unkown Opcode [0x0000]: " << opcode << std::endl;
+            std::cout << "Unkown Opcode General: " << opcode << std::endl;
     }
 }
 void Chip::Init(){
