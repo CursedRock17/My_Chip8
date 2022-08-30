@@ -20,6 +20,7 @@ int main(int argc, char** argv){
     chip.LoadGame(argv[1]);
 
     while(!gfx.Needs_Stop()){
+        gfx.Check_Keys(chip);
         chip.EmulateChip();
 
         if(chip.draw_flag){
@@ -28,7 +29,6 @@ int main(int argc, char** argv){
             chip.draw_flag = false;
         }
 
-        gfx.Check_Keys(chip);
     }
 
     return 0;

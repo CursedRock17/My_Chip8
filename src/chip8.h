@@ -25,9 +25,6 @@ std::array<unsigned char,(64 * 32)> graphics; //Replace with SDL or openGL
 
 private:
 
-//Converting to hexadecimal
-unsigned short Short_to_Hex(unsigned short code);
-
 //This Memory starts arter 0x200 (512) thats where the interpreter is
 std::array<unsigned short, 4096> memory;
 

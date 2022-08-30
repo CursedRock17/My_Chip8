@@ -13,8 +13,8 @@ void Chip::EmulateChip(){
     nnn = opcode & 0x0FFF; // lowest 12 bits
     n = opcode & 0x000F; // lowest 4 bits
     nn = opcode & 0x00FF; // lowest 8 bits
-    x = (opcode >> 8) & 0xF; // lower 4 bits of the high byte
-    y = ((opcode >> 4) & 0xF); // upper 4 bits of the low byte
+    x = (opcode >> 8) & 0x000F; // lower 4 bits of the high byte
+    y = ((opcode >> 4) & 0x000F); // upper 4 bits of the low byte
 
     unsigned short upper_bytes = opcode & 0xF000;
 
@@ -207,14 +207,17 @@ void Chip::EmulateChip(){
     case 0xE000:{        
         switch(nn){
             //Ex9e skips the next instruction if
-            //the key stored in VX is pressde
+            //the key stored in VX is pressed
+
             case 0x009E:
+             std::cout << "0x009E - " << V[x] << std::endl;
                 if(key[(V[x])] == 1){
                     PC += 2;
                 }
                 break;
 
             case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
+             std::cout << "0x00A1 - " << V[x] << std::endl;
                 if(key[(V[x])] == 0)
                     PC += 2;
                 break;
@@ -227,7 +230,6 @@ void Chip::EmulateChip(){
     
 
     case 0xF000:{
-        std::cout << opcode << std::endl;
         switch(nn){
             case 0x0007: // Set Vx to the delay timer value
             V[x] = delay_timer;
@@ -235,15 +237,11 @@ void Chip::EmulateChip(){
 
             case 0x000A: //Store the value of a key press in Vx
             {
-                std::cout << "Hi" << std::endl;
-            bool has_pressed = true;
-            while(has_pressed){
+                PC -= 2;
                 for(const auto& each_key : key){
-                    if(0 != each_key){
+                    if(each_key == 1){
                         V[x] = I;
-                        has_pressed = false;
                     }
-                }
             }
                 break;
             }
@@ -262,6 +260,7 @@ void Chip::EmulateChip(){
 
             case 0x0029: // I equals to the location of sprtite for digit Vx
             I = V[x] * 0x5;
+
                 break;
 
             case 0x0033: //0xFX33
@@ -289,9 +288,14 @@ void Chip::EmulateChip(){
         break;
     }
 
-        //Set Timers
+        default: 
+            std::cout << "Unkown Opcode General: " << opcode << std::endl;
+    }
+
+            //Set Timers
         if(delay_timer > 0){
             --delay_timer;
+            std::cout << delay_timer << std::endl;
         }
 
         if(sound_timer > 0) {
@@ -300,9 +304,6 @@ void Chip::EmulateChip(){
             --sound_timer;
         }
 
-        default: 
-            std::cout << "Unkown Opcode General: " << opcode << std::endl;
-    }
 }
 void Chip::Init(){
     //Begin loading the game and prepping the registers
@@ -352,12 +353,7 @@ void Chip::LoadGame(const char* game_name){
 
 }
 
-unsigned short Chip::Short_to_Hex(unsigned short code)
-{
-
-    return 1;
-}
-
 void Chip::SetKeys(int index, int power){
     key[index] = power;
+        
 }
