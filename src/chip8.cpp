@@ -6,28 +6,25 @@ Chip::~Chip(){}
 void Chip::EmulateChip(){
     //Fetch Opcode
     opcode = (memory[PC] << 8) | memory[PC + 1];
-    //Move to next instruction before other stuff
+
     PC += 2;
+
     //It's easier to just premake these memory addresses
+    nnn = opcode & 0x0FFF; // lowest 12 bits
+    n = opcode & 0x000F; // lowest 4 bits
+    nn = opcode & 0x00FF; // lowest 8 bits
+    x = (opcode >> 8) & 0xF; // lower 4 bits of the high byte
+    y = ((opcode >> 4) & 0xF); // upper 4 bits of the low byte
 
-    std::uint16_t nnn = opcode & 0x0FFF; // lowest 12 bits
-    std::uint8_t n = opcode & 0x000F; // lowest 4 bits
-    std::uint8_t nn = opcode & 0x00FF; // lowest 8 bits
-    std::uint16_t x = (opcode & 0x0F00) >> 8; // lower 4 bits of the high byte
-    std::uint16_t y = (opcode & 0x00F0) >> 4; // upper 4 bits of the low byte
-
+    unsigned short upper_bytes = opcode & 0xF000;
 
     //Decode Opcode - Convert from big endian to regular binary
-    switch(opcode & 0xF000){
+    switch(upper_bytes){
     // Some Opcodes //
     //We need to set I to the adress NNN by using ANNN
     //Execute opcodes - Go from current to what we need
     case 0x0000: 
         switch(nn){ // Have to check the lower 4 bits after checking upper 4
-            case 0x0000:
-            //Should be Ignored by modern computers
-            break;
-
             case 0x00E0:
             //Clear the screen
             //Replace all the values with 0, the hexcode for black
@@ -54,8 +51,7 @@ void Chip::EmulateChip(){
 
     case 0x2000:
     //Call the subroute at NNN
-        ++sp;
-        stack[sp] = PC;
+        stack[++sp] = PC;
         PC = nnn;
         break;
 
@@ -78,14 +74,14 @@ void Chip::EmulateChip(){
 
     case 0x6000: //Just set Vx to nn
         V[x] = nn;
-    
+
         break;
 
     case 0x7000: // Set Vx to nn + Vx or add nn
         V[x] += nn;
         
         break;
-
+        
     case 0x8000:
         switch(n){
             case 0x0000: //Have to get to 0000 in binary (If & is exclusive), Set Vx to Vy, change those registries
@@ -192,6 +188,7 @@ void Chip::EmulateChip(){
             uint8_t Vy = V[y];
             uint8_t pixel;
             V[0xF] = 0;
+
             for(int yline = 0; yline < n; yline++) {
                 pixel = memory[I + yline];
                 for(int xline = 0; xline < 8; xline++) {
@@ -207,21 +204,18 @@ void Chip::EmulateChip(){
         break;
     }
 
-    case 0xE000:{
-        
+    case 0xE000:{        
         switch(nn){
             //Ex9e skips the next instruction if
             //the key stored in VX is pressde
             case 0x009E:
-                if(key[V[x]] != 0){
+                if(key[(V[x])] == 1){
                     PC += 2;
-                    std::cout << "Chec" << std::endl;
                 }
-        
                 break;
 
             case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
-                if(key[V[x]] == 0)
+                if(key[(V[x])] == 0)
                     PC += 2;
                 break;
 
@@ -233,14 +227,15 @@ void Chip::EmulateChip(){
     
 
     case 0xF000:{
-        switch(n){
+        std::cout << opcode << std::endl;
+        switch(nn){
             case 0x0007: // Set Vx to the delay timer value
             V[x] = delay_timer;
                 break;
 
             case 0x000A: //Store the value of a key press in Vx
             {
-                
+                std::cout << "Hi" << std::endl;
             bool has_pressed = true;
             while(has_pressed){
                 for(const auto& each_key : key){
@@ -262,7 +257,6 @@ void Chip::EmulateChip(){
                 break;
 
             case 0x001E: // Add I and Vx into I
-            //V[0xF] = (I + V[x] > 0xFFF) ? 1 : 0;
             I += V[x];
                 break;
 
@@ -271,19 +265,20 @@ void Chip::EmulateChip(){
                 break;
 
             case 0x0033: //0xFX33
-                memory[I] = V[x] / 100;
+                memory[I] = (V[x] / 100) % 10;
                 memory[I + 1] = (V[x] / 10) % 10;
-                memory[I + 2] = (V[x] / 100) % 10;
+                memory[I + 2] = (V[x] / 1) % 10;
                 break;
 
             case 0x0055: //Store registers V0 through Vx in memory starting at I
-            for(int register_index = 0; register_index < 16; register_index++){
+            for(int register_index = 0; register_index <= x; register_index++){
                 memory[I + register_index] = V[register_index];
             }
+
                 break;
 
             case 0x0065: // Read registers V0 through Vx from memory starting at I
-            for(int mem_index = 0; mem_index < 16; mem_index++){
+            for(int mem_index = 0; mem_index <= x; mem_index++){
                 V[mem_index] = memory[I + mem_index];
             }
                 break;
@@ -295,8 +290,9 @@ void Chip::EmulateChip(){
     }
 
         //Set Timers
-        if(delay_timer > 0)
+        if(delay_timer > 0){
             --delay_timer;
+        }
 
         if(sound_timer > 0) {
             if(sound_timer == 1)
@@ -354,6 +350,12 @@ void Chip::LoadGame(const char* game_name){
         }
     }
 
+}
+
+unsigned short Chip::Short_to_Hex(unsigned short code)
+{
+
+    return 1;
 }
 
 void Chip::SetKeys(int index, int power){

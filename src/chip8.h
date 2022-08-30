@@ -25,15 +25,18 @@ std::array<unsigned char,(64 * 32)> graphics; //Replace with SDL or openGL
 
 private:
 
+//Converting to hexadecimal
+unsigned short Short_to_Hex(unsigned short code);
+
 //This Memory starts arter 0x200 (512) thats where the interpreter is
 std::array<unsigned short, 4096> memory;
 
 unsigned short opcode{}; 
 
-unsigned char sound_timer = {0};
-unsigned char delay_timer = {0};
+unsigned char sound_timer{60};
+unsigned char delay_timer{60};
 
-std::array<unsigned short, 16> stack;
+std::array<unsigned short, 12> stack;
 unsigned char sp = {0}; //Stack Pointer
 
 //Keyboard
@@ -43,6 +46,10 @@ std::array<unsigned short, 16> key;
 unsigned char V[16];
 unsigned short PC = {0x200};
 unsigned short I{};
+
+
+std::uint16_t nnn;
+std::uint8_t x, y, n, nn;
 
 
 //Keypad is made of 16 registers for the Vx and maps 0-9 and A-F, its a 4x4 matrix
