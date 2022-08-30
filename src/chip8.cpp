@@ -210,16 +210,15 @@ void Chip::EmulateChip(){
             //the key stored in VX is pressed
 
             case 0x009E:
-             std::cout << "0x009E - " << V[x] << std::endl;
                 if(key[(V[x])] == 1){
                     PC += 2;
                 }
                 break;
 
             case 0x00A1: //Checks if V[x] is in the up position, if it is PC += 2
-             std::cout << "0x00A1 - " << V[x] << std::endl;
-                if(key[(V[x])] == 0)
+                if(key[(V[x])] == 0){
                     PC += 2;
+                }
                 break;
 
             default: 
@@ -295,7 +294,6 @@ void Chip::EmulateChip(){
             //Set Timers
         if(delay_timer > 0){
             --delay_timer;
-            std::cout << delay_timer << std::endl;
         }
 
         if(sound_timer > 0) {
@@ -355,5 +353,4 @@ void Chip::LoadGame(const char* game_name){
 
 void Chip::SetKeys(int index, int power){
     key[index] = power;
-        
 }
